@@ -1,6 +1,19 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from 'sonner';
 import { ProcessedFile } from '../types/file';
+
+declare global {
+  interface Window {
+    showSaveFilePicker?: (options?: {
+      suggestedName?: string;
+      types?: Array<{
+        description: string;
+        accept: Record<string, string[]>;
+      }>;
+    }) => Promise<FileSystemFileHandle>;
+  }
+}
 
 export const downloadFile = async (file: ProcessedFile): Promise<void> => {
   if (!file.downloadUrl || !file.filePath) {
@@ -22,12 +35,38 @@ export const downloadFile = async (file: ProcessedFile): Promise<void> => {
   const response = await fetch(file.downloadUrl);
   const blob = await response.blob();
   
-  // Create object URL and trigger download dialog
+  try {
+    // Try to use the File System Access API first
+    if (window.showSaveFilePicker) {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: file.name,
+        types: [{
+          description: 'PDF Document',
+          accept: {
+            'application/pdf': ['.pdf'],
+          },
+        }],
+      });
+      
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      toast.success(`${file.name} saved successfully`);
+      return;
+    }
+  } catch (err) {
+    // If user cancelled the save dialog, silently continue to fallback
+    if (err.name !== 'AbortError') {
+      console.error('Error using File System Access API:', err);
+    }
+  }
+
+  // Fallback method for browsers that don't support File System Access API
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.style.display = 'none';
   link.href = url;
-  link.download = file.name; // This will suggest the filename in the save dialog
+  link.download = file.name;
   link.target = '_blank'; // This helps trigger the "Save As" dialog in more browsers
   
   document.body.appendChild(link);
