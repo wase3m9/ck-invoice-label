@@ -42,10 +42,16 @@ const Index = () => {
       // Process the PDF with GPT
       const response = await fetch('https://yjhamwwwryfswimjjzgt.supabase.co/functions/v1/process-invoice', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+        },
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Failed to process invoice');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process invoice');
+      }
 
       const { details } = await response.json();
       const parsedDetails = JSON.parse(details);
