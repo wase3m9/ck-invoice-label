@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +9,47 @@ const corsHeaders = {
 };
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+
+async function convertPDFPageToImage(pdfData: ArrayBuffer): Promise<string> {
+  try {
+    // Load the PDF document
+    const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+    const pdf = await loadingTask.promise;
+    
+    // Get the first page
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better quality
+
+    // Create canvas
+    const canvas = new OffscreenCanvas(viewport.width, viewport.height);
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      throw new Error('Failed to get canvas context');
+    }
+
+    // Render PDF page to canvas
+    await page.render({
+      canvasContext: context,
+      viewport: viewport
+    }).promise;
+
+    // Convert canvas to blob
+    const blob = await canvas.convertToBlob();
+    
+    // Convert blob to base64
+    const arrayBuffer = await blob.arrayBuffer();
+    const base64String = btoa(
+      new Uint8Array(arrayBuffer)
+        .reduce((data, byte) => data + String.fromCharCode(byte), '')
+    );
+
+    return `data:image/png;base64,${base64String}`;
+  } catch (error) {
+    console.error('PDF conversion error:', error);
+    throw new Error('Failed to convert PDF to image');
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -22,12 +64,15 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    // Convert file to base64
-    const arrayBuffer = await file.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
+    console.log('Processing PDF file:', file.name);
 
-    // Call OpenAI API
+    // Convert PDF to image
+    const pdfArrayBuffer = await file.arrayBuffer();
+    const imageBase64 = await convertPDFPageToImage(pdfArrayBuffer);
+
+    console.log('Successfully converted PDF to image');
+
+    // Call OpenAI API with the image
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -39,22 +84,19 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an AI trained to extract invoice details. You'll receive a PDF file converted to base64. 
-                     Please extract the following information: location (office location), supplier name (company that issued the invoice), 
-                     invoice number, and gross invoice amount (total amount including taxes). 
-                     Return ONLY a JSON object with these fields: location, supplier_name, invoice_number, gross_invoice_amount`
+            content: "You are an AI trained to extract invoice details from images. Extract the following: location (office location), supplier name (company name), invoice number, and gross invoice amount (total including taxes). Return ONLY a JSON object with these fields: location, supplier_name, invoice_number, gross_invoice_amount"
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Please extract the invoice details from this document. Return only the JSON object with the required fields."
+                text: "Extract the invoice details from this image and return only the JSON object."
               },
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:application/pdf;base64,${base64String}`
+                  url: imageBase64
                 }
               }
             ]
@@ -72,11 +114,13 @@ serve(async (req) => {
     const openAIData = await openAIResponse.json();
     
     try {
-      // Try to parse the JSON from the response
+      // Parse the JSON response
       const responseText = openAIData.choices[0].message.content;
+      console.log('OpenAI response:', responseText);
+      
       const extractedDetails = JSON.parse(responseText);
 
-      // Validate the extracted details
+      // Validate required fields
       if (!extractedDetails.location || 
           !extractedDetails.supplier_name || 
           !extractedDetails.invoice_number || 
@@ -84,9 +128,9 @@ serve(async (req) => {
         throw new Error('Missing required fields in extracted details');
       }
 
-      // Clean up the amount format
+      // Clean up amount format
       extractedDetails.gross_invoice_amount = extractedDetails.gross_invoice_amount
-        .replace(/[^0-9.]/g, '') // Remove all non-numeric characters except decimal point
+        .replace(/[^0-9.]/g, '')
         .trim();
 
       console.log('Successfully extracted details:', extractedDetails);
