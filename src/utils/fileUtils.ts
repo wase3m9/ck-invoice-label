@@ -19,26 +19,43 @@ export const downloadFile = async (file: ProcessedFile): Promise<void> => {
     throw updateError;
   }
 
-  // Fetch and create blob
+  // Fetch file
   const response = await fetch(file.downloadUrl);
   const blob = await response.blob();
   
   // Create object URL
   const url = window.URL.createObjectURL(blob);
   
-  // Create download link
-  const link = document.createElement('a');
-  link.style.display = 'none';
-  link.href = url;
-  link.download = file.name;
-  
-  // Trigger download
-  document.body.appendChild(link);
-  link.click();
-  
-  // Cleanup
-  window.URL.revokeObjectURL(url);
-  document.body.removeChild(link);
+  // Create download link with showSaveFilePicker
+  try {
+    // Use the File System Access API to show the file picker
+    const handle = await window.showSaveFilePicker({
+      suggestedName: file.name,
+      types: [{
+        description: 'PDF Document',
+        accept: {
+          'application/pdf': ['.pdf'],
+        },
+      }],
+    });
+    
+    // Create a writable stream and write the blob to it
+    const writable = await handle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+    
+    // Cleanup
+    window.URL.revokeObjectURL(url);
+    
+    toast.success(`${file.name} saved successfully`);
+  } catch (err) {
+    // User cancelled the save dialog
+    if (err.name !== 'AbortError') {
+      console.error('Error saving file:', err);
+      toast.error(`Failed to save ${file.name}`);
+      throw err;
+    }
+  }
 };
 
 export const deleteFile = async (file: ProcessedFile): Promise<void> => {
