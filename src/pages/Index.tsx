@@ -15,6 +15,7 @@ const DEFAULT_FIELDS: LabelField[] = [
 const DEFAULT_FORMAT = ['location', 'supplier_name', 'invoice_number', 'gross_invoice_amount'];
 
 const Index = () => {
+  const [fields, setFields] = useState<LabelField[]>(DEFAULT_FIELDS);
   const [labelFormat, setLabelFormat] = useState<string[]>(DEFAULT_FORMAT);
 
   const handleFormatChange = (fieldId: string, position: number) => {
@@ -23,11 +24,15 @@ const Index = () => {
     setLabelFormat(newFormat);
   };
 
+  const handleAddCustomField = (newField: LabelField) => {
+    setFields(prev => [...prev, newField]);
+  };
+
   const generateFileName = (details: Record<string, string>) => {
     if (!details) return '';
 
     const parts = labelFormat.map(fieldId => {
-      const field = DEFAULT_FIELDS.find(f => f.id === fieldId);
+      const field = fields.find(f => f.id === fieldId);
       if (!field) return '';
 
       const value = details[field.id];
@@ -54,9 +59,10 @@ const Index = () => {
         <div className="glass-card p-8 mb-8">
           <div className="mb-8">
             <LabelFormatConfig
-              fields={DEFAULT_FIELDS}
+              fields={fields}
               selectedFormat={labelFormat}
               onFormatChange={handleFormatChange}
+              onAddCustomField={handleAddCustomField}
             />
           </div>
           <FileUpload onFilesDrop={handleFilesDrop} />
