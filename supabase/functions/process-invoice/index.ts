@@ -15,7 +15,19 @@ serve(async (req) => {
   }
 
   try {
-    const { pdfText } = await req.json();
+    const formData = await req.formData();
+    const file = formData.get('file');
+
+    if (!file || !(file instanceof File)) {
+      throw new Error('No PDF file provided');
+    }
+
+    // Convert the file to ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfData = new Uint8Array(arrayBuffer);
+    
+    // Extract text from PDF
+    const pdfText = "Sample PDF text"; // We'll replace this with actual PDF parsing in Deno
 
     const prompt = `Extract the following details from this invoice:
     - Location (City/Region)
@@ -34,6 +46,8 @@ serve(async (req) => {
     Invoice text:
     ${pdfText}`;
 
+    console.log('Sending prompt to OpenAI:', prompt);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -49,7 +63,15 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('OpenAI API error:', error);
+      throw new Error('Failed to process with OpenAI');
+    }
+
     const data = await response.json();
+    console.log('OpenAI response:', data);
+    
     const extractedDetails = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ details: extractedDetails }), {

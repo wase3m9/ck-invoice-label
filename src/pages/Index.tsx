@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { FileUpload } from '../components/FileUpload';
 import { FileList } from '../components/FileList';
@@ -29,26 +28,20 @@ const Index = () => {
       const fileExt = file.name.split('.').pop();
       const filePath = `${crypto.randomUUID()}.${fileExt}`;
       
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('pdfs')
         .upload(filePath, file);
 
       if (uploadError) throw new Error('Failed to upload file');
 
-      // Process the PDF text (in a real implementation, we'd use a PDF parsing library)
-      const text = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          resolve(e.target?.result as string);
-        };
-        reader.readAsText(file);
-      });
+      // Create FormData to send the file
+      const formData = new FormData();
+      formData.append('file', file);
 
-      // Process the PDF text with GPT
+      // Process the PDF with GPT
       const response = await fetch('/functions/process-invoice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pdfText: text }),
+        body: formData,
       });
 
       if (!response.ok) throw new Error('Failed to process invoice');
