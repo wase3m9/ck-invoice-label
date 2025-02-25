@@ -1,30 +1,25 @@
-
 import { ProcessingStatus, ProcessingState } from './ProcessingStatus';
-import { FileText, Save, Trash2 } from 'lucide-react';
-
+import { FileText, Save } from 'lucide-react';
 interface FileItem {
   name: string;
   size: number;
   status: ProcessingState;
   downloadUrl?: string;
 }
-
 interface FileListProps {
   files: FileItem[];
   onSave?: (file: FileItem) => void;
-  onDelete?: (file: FileItem) => void;
 }
-
-export const FileList = ({ files, onSave, onDelete }: FileListProps) => {
+export const FileList = ({
+  files,
+  onSave
+}: FileListProps) => {
   if (files.length === 0) return null;
-
-  return (
-    <div className="space-y-4">
-      {files.map((file, index) => (
-        <div key={index} className="file-item flex items-center justify-between gap-4">
+  return <div className="space-y-4">
+      {files.map((file, index) => <div key={index} className="file-item flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <FileText className="h-8 w-8 text-accent" />
-            <div>
+            <div className="bg-neutral-950/0">
               <p className="font-medium text-gray-900 truncate max-w-[300px]">
                 {file.name}
               </p>
@@ -35,27 +30,10 @@ export const FileList = ({ files, onSave, onDelete }: FileListProps) => {
           </div>
           <div className="flex items-center gap-4">
             <ProcessingStatus state={file.status} />
-            {file.downloadUrl && (
-              <>
-                <button
-                  onClick={() => onSave?.(file)}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  title="Save file"
-                >
-                  <Save className="h-5 w-5 text-primary" />
-                </button>
-                <button
-                  onClick={() => onDelete?.(file)}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  title="Delete file"
-                >
-                  <Trash2 className="h-5 w-5 text-destructive" />
-                </button>
-              </>
-            )}
+            {file.downloadUrl && <button onClick={() => onSave?.(file)} className="p-2 rounded-full hover:bg-gray-100 transition-colors" title="Save file">
+                <Save className="h-5 w-5 text-accent" />
+              </button>}
           </div>
-        </div>
-      ))}
-    </div>
-  );
+        </div>)}
+    </div>;
 };
