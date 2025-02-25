@@ -10,6 +10,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Valid locations for the mock data
+const validLocations = ['Brighton', 'Bluewater', 'Lakeside', 'Canterbury', 'Guildford'];
+
+// Example supplier names
+const exampleSuppliers = [
+  'Nando\'s',
+  'Costa Coffee',
+  'Starbucks',
+  'Pizza Express',
+  'Wagamama',
+  'Pret A Manger'
+];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -23,14 +36,15 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    // For now, we'll return mock data since PDF parsing in Deno is limited
-    // In a production environment, you'd want to use a proper PDF parsing service
+    // Generate random mock data with valid locations and suppliers
     const mockDetails = {
-      location: "London",
-      supplier_name: "Office Supplies",
-      invoice_number: "INV-2024-001",
-      gross_invoice_amount: "250.00"
+      location: validLocations[Math.floor(Math.random() * validLocations.length)],
+      supplier_name: exampleSuppliers[Math.floor(Math.random() * exampleSuppliers.length)],
+      invoice_number: `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
+      gross_invoice_amount: (Math.random() * 200 + 50).toFixed(2)
     };
+
+    console.log('Generated mock details:', mockDetails);
 
     return new Response(
       JSON.stringify({ details: mockDetails }),
