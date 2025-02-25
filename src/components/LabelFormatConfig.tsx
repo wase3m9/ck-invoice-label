@@ -26,21 +26,18 @@ export const LabelFormatConfig = ({ fields, selectedFormat, onFormatChange }: La
               Position {position + 1}
             </label>
             <Select
-              value={selectedFormat[position] || ""}
+              value={selectedFormat[position]}
               onValueChange={(value) => onFormatChange(value, position)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select field" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">
-                  (None)
-                </SelectItem>
                 {fields.map((field) => (
                   <SelectItem 
                     key={field.id} 
                     value={field.id}
-                    disabled={selectedFormat.includes(field.id) && selectedFormat[position] !== field.id}
+                    disabled={selectedFormat.includes(field.id)}
                   >
                     {field.label}
                   </SelectItem>
@@ -51,12 +48,10 @@ export const LabelFormatConfig = ({ fields, selectedFormat, onFormatChange }: La
         ))}
       </div>
       <p className="text-sm text-gray-500 mt-2">
-        Preview: {selectedFormat
-          .filter(fieldId => fieldId) // Filter out empty selections
-          .map((fieldId, index) => {
-            const field = fields.find(f => f.id === fieldId);
-            return field ? `${index > 0 ? ' - ' : ''}${field.label}` : '';
-          }).join('')}
+        Preview: {selectedFormat.map((fieldId, index) => {
+          const field = fields.find(f => f.id === fieldId);
+          return field ? `${index > 0 ? ' - ' : ''}${field.label}` : '';
+        }).join('')}
       </p>
     </div>
   );

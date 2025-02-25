@@ -212,8 +212,8 @@ const Index = () => {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             PDF Invoice Organizer
           </h1>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Designed to streamline document management by automatically labelling uploaded PDF invoices in a structured and consistent format. Simply upload a PDF invoice, and the system will return the file with a correctly formatted label for easy organization and retrieval.
+          <p className="text-lg text-gray-600">
+            Upload your invoices and we'll organize them automatically
           </p>
         </div>
 
