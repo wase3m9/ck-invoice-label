@@ -99,8 +99,11 @@ export const processFile = async (
 
   const data = await response.json();
   const extractedDetails = data.details;
-
-  // Format the amount with commas for thousands
+  
+  // Store the raw amount for database
+  const rawAmount = extractedDetails.gross_invoice_amount;
+  
+  // Format the amount for display/filename
   if (extractedDetails.gross_invoice_amount) {
     const amount = parseFloat(extractedDetails.gross_invoice_amount);
     extractedDetails.gross_invoice_amount = amount.toLocaleString('en-GB', {
@@ -111,7 +114,7 @@ export const processFile = async (
 
   const newFilename = generateFileName(extractedDetails);
 
-  // Save to database
+  // Save to database using the raw amount
   const { error: dbError } = await supabase
     .from('invoices')
     .insert({
@@ -121,7 +124,7 @@ export const processFile = async (
       location: extractedDetails.location,
       supplier_name: extractedDetails.supplier_name,
       invoice_number: extractedDetails.invoice_number,
-      gross_invoice_amount: extractedDetails.gross_invoice_amount
+      gross_invoice_amount: rawAmount // Use the raw amount for database storage
     });
 
   if (dbError) {
