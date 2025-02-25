@@ -26,7 +26,7 @@ const Login = () => {
           <img
             src="/lovable-uploads/5574e1a3-6ab7-4e5b-aaf8-f74b255fe514.png"
             alt="CloudKeepers Logo"
-            className="h-20 mb-8"
+            className="h-16 mb-8" /* Changed from h-20 to h-16 */
           />
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             PDF Invoice Organiser
@@ -42,10 +42,10 @@ const Login = () => {
             placeholder="Enter access code"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="text-center w-[160px]" /* Reduced width */
+            className="text-center w-[160px]"
             autoFocus
           />
-          <Button type="submit" className="w-[160px]"> {/* Matching width with input */}
+          <Button type="submit" className="w-[160px]">
             Continue
           </Button>
         </form>
