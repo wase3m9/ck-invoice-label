@@ -106,12 +106,6 @@ export const processFile = async (
   file: File, 
   generateFileName: (details: any) => string
 ): Promise<{ name: string; details: any; downloadUrl: string; filePath: string }> => {
-  // Get the current user
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error('You must be logged in to process files');
-  }
-
   const fileExt = file.name.split('.').pop();
   const filePath = `${crypto.randomUUID()}.${fileExt}`;
   
@@ -160,7 +154,7 @@ export const processFile = async (
 
   const newFilename = generateFileName(extractedDetails);
 
-  // Save to database using the raw amount and including the user_id
+  // Save to database using the raw amount
   const { error: dbError } = await supabase
     .from('invoices')
     .insert({
@@ -170,8 +164,7 @@ export const processFile = async (
       location: extractedDetails.location,
       supplier_name: extractedDetails.supplier_name,
       invoice_number: extractedDetails.invoice_number,
-      gross_invoice_amount: rawAmount,
-      user_id: user.id // Add the user ID to the record
+      gross_invoice_amount: rawAmount // Use the raw amount for database storage
     });
 
   if (dbError) {
@@ -190,4 +183,3 @@ export const processFile = async (
     filePath: filePath,
   };
 };
-
