@@ -65,7 +65,7 @@ export const deleteFile = async (file: ProcessedFile): Promise<void> => {
 export const processFile = async (
   file: File, 
   generateFileName: (details: any) => string
-): Promise<{ name: string; details: any; downloadUrl: string }> => {
+): Promise<{ name: string; details: any; downloadUrl: string; filePath: string }> => {
   const fileExt = file.name.split('.').pop();
   const filePath = `${crypto.randomUUID()}.${fileExt}`;
   
@@ -127,5 +127,6 @@ export const processFile = async (
     name: newFilename,
     details: extractedDetails,
     downloadUrl: publicUrl,
+    filePath: filePath, // Add filePath to return value
   };
 };

@@ -31,6 +31,7 @@ export const useFileProcessor = (labelFormat: string[], generateFileName: (detai
               name: processedDetails.name,
               status: 'success',
               downloadUrl: processedDetails.downloadUrl,
+              filePath: processedDetails.filePath, // Add filePath here
               details: processedDetails.details,
             };
           }
