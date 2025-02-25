@@ -1,7 +1,6 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.min.mjs';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,47 +8,6 @@ const corsHeaders = {
 };
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
-async function convertPDFPageToImage(pdfData: ArrayBuffer): Promise<string> {
-  try {
-    // Load the PDF document
-    const loadingTask = pdfjsLib.getDocument({ data: pdfData });
-    const pdf = await loadingTask.promise;
-    
-    // Get the first page
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better quality
-
-    // Create canvas
-    const canvas = new OffscreenCanvas(viewport.width, viewport.height);
-    const context = canvas.getContext('2d');
-
-    if (!context) {
-      throw new Error('Failed to get canvas context');
-    }
-
-    // Render PDF page to canvas
-    await page.render({
-      canvasContext: context,
-      viewport: viewport
-    }).promise;
-
-    // Convert canvas to blob
-    const blob = await canvas.convertToBlob();
-    
-    // Convert blob to base64
-    const arrayBuffer = await blob.arrayBuffer();
-    const base64String = btoa(
-      new Uint8Array(arrayBuffer)
-        .reduce((data, byte) => data + String.fromCharCode(byte), '')
-    );
-
-    return `data:image/png;base64,${base64String}`;
-  } catch (error) {
-    console.error('PDF conversion error:', error);
-    throw new Error('Failed to convert PDF to image');
-  }
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -66,13 +24,14 @@ serve(async (req) => {
 
     console.log('Processing PDF file:', file.name);
 
-    // Convert PDF to image
-    const pdfArrayBuffer = await file.arrayBuffer();
-    const imageBase64 = await convertPDFPageToImage(pdfArrayBuffer);
+    // Convert PDF to base64
+    const arrayBuffer = await file.arrayBuffer();
+    const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
+    const dataUrl = `data:application/pdf;base64,${base64String}`;
 
-    console.log('Successfully converted PDF to image');
+    console.log('Successfully converted PDF to base64');
 
-    // Call OpenAI API with the image
+    // Call OpenAI API
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -84,24 +43,31 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are an AI trained to extract invoice details from images. Extract the following: location (office location), supplier name (company name), invoice number, and gross invoice amount (total including taxes). Return ONLY a JSON object with these fields: location, supplier_name, invoice_number, gross_invoice_amount"
+            content: `You are an AI trained to analyze invoices. When given a PDF invoice, extract:
+                     1. Location (office location)
+                     2. Supplier name (company that issued the invoice)
+                     3. Invoice number
+                     4. Gross invoice amount (total including taxes)
+                     Return ONLY a JSON object with these exact fields: location, supplier_name, invoice_number, gross_invoice_amount.
+                     Format the amount as a plain number without currency symbols.`
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Extract the invoice details from this image and return only the JSON object."
+                text: "Extract the invoice details from this PDF. Return only the JSON object with the required fields."
               },
               {
                 type: "image_url",
                 image_url: {
-                  url: imageBase64
+                  url: dataUrl
                 }
               }
             ]
           }
-        ]
+        ],
+        max_tokens: 1000
       }),
     });
 
@@ -112,24 +78,26 @@ serve(async (req) => {
     }
 
     const openAIData = await openAIResponse.json();
-    
+    console.log('Raw OpenAI response:', openAIData);
+
     try {
-      // Parse the JSON response
       const responseText = openAIData.choices[0].message.content;
-      console.log('OpenAI response:', responseText);
-      
+      console.log('OpenAI content:', responseText);
+
       const extractedDetails = JSON.parse(responseText);
 
       // Validate required fields
-      if (!extractedDetails.location || 
-          !extractedDetails.supplier_name || 
-          !extractedDetails.invoice_number || 
-          !extractedDetails.gross_invoice_amount) {
-        throw new Error('Missing required fields in extracted details');
+      const requiredFields = ['location', 'supplier_name', 'invoice_number', 'gross_invoice_amount'];
+      for (const field of requiredFields) {
+        if (!extractedDetails[field]) {
+          console.error(`Missing required field: ${field}`);
+          throw new Error(`Missing required field: ${field}`);
+        }
       }
 
-      // Clean up amount format
+      // Clean up amount format - remove any non-numeric characters except decimal point
       extractedDetails.gross_invoice_amount = extractedDetails.gross_invoice_amount
+        .toString()
         .replace(/[^0-9.]/g, '')
         .trim();
 
@@ -141,7 +109,6 @@ serve(async (req) => {
       );
     } catch (parseError) {
       console.error('Error parsing OpenAI response:', parseError);
-      console.error('Raw OpenAI response:', openAIData.choices[0].message.content);
       throw new Error('Failed to parse extracted invoice details');
     }
   } catch (error) {
