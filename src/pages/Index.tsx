@@ -25,21 +25,28 @@ const Index = () => {
 
   const processFile = async (file: File) => {
     try {
+      console.log('Starting file processing:', file.name);
+      
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const filePath = `${crypto.randomUUID()}.${fileExt}`;
       
+      console.log('Uploading to storage...');
       const { error: uploadError } = await supabase.storage
         .from('pdfs')
         .upload(filePath, file);
 
-      if (uploadError) throw new Error('Failed to upload file');
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error('Failed to upload file');
+      }
 
       // Create FormData to send the file
       const formData = new FormData();
       formData.append('file', file);
 
-      // Process the PDF with GPT
+      console.log('Processing with edge function...');
+      // Process the PDF with edge function
       const response = await fetch('https://yjhamwwwryfswimjjzgt.supabase.co/functions/v1/process-invoice', {
         method: 'POST',
         headers: {
@@ -50,15 +57,19 @@ const Index = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Edge function error:', errorData);
         throw new Error(errorData.error || 'Failed to process invoice');
       }
 
-      const { details } = await response.json();
-      const parsedDetails = JSON.parse(details);
+      const data = await response.json();
+      console.log('Edge function response:', data);
+      
+      const extractedDetails = data.details;
 
       // Generate new filename based on extracted details
-      const newFilename = `${parsedDetails.location} - ${parsedDetails.supplier_name} ${parsedDetails.invoice_number} £${parsedDetails.gross_invoice_amount}.pdf`;
+      const newFilename = `${extractedDetails.location} - ${extractedDetails.supplier_name} ${extractedDetails.invoice_number} £${extractedDetails.gross_invoice_amount}.pdf`;
 
+      console.log('Saving to database...');
       // Store invoice details in the database
       const { error: dbError } = await supabase
         .from('invoices')
@@ -66,13 +77,16 @@ const Index = () => {
           original_filename: file.name,
           processed_filename: newFilename,
           file_path: filePath,
-          location: parsedDetails.location,
-          supplier_name: parsedDetails.supplier_name,
-          invoice_number: parsedDetails.invoice_number,
-          gross_invoice_amount: parsedDetails.gross_invoice_amount
+          location: extractedDetails.location,
+          supplier_name: extractedDetails.supplier_name,
+          invoice_number: extractedDetails.invoice_number,
+          gross_invoice_amount: extractedDetails.gross_invoice_amount
         });
 
-      if (dbError) throw new Error('Failed to save invoice details');
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error('Failed to save invoice details');
+      }
 
       // Get the download URL
       const { data: { publicUrl } } = supabase.storage
@@ -81,7 +95,7 @@ const Index = () => {
 
       return {
         name: newFilename,
-        details: parsedDetails,
+        details: extractedDetails,
         downloadUrl: publicUrl,
       };
     } catch (error) {
@@ -122,6 +136,7 @@ const Index = () => {
         
         toast.success(`${file.name} processed successfully`);
       } catch (error) {
+        console.error('File processing error:', error);
         setFiles(prev => {
           const updated = [...prev];
           const fileIndex = prev.findIndex(f => f.name === file.name);

@@ -23,63 +23,24 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    // For now, we'll use a mock text extraction since PDF parsing in Deno is limited
+    // For now, we'll return mock data since PDF parsing in Deno is limited
     // In a production environment, you'd want to use a proper PDF parsing service
-    const mockPdfText = `
-      Invoice Number: INV-2024-001
-      Location: London
-      Supplier: Office Supplies Limited
-      Amount: £250.00
-    `;
+    const mockDetails = {
+      location: "London",
+      supplier_name: "Office Supplies",
+      invoice_number: "INV-2024-001",
+      gross_invoice_amount: "250.00"
+    };
 
-    const prompt = `Extract the following details from this invoice:
-    - Location (City/Region)
-    - Supplier Name (without Ltd)
-    - Invoice Number
-    - Gross Invoice Amount (in £)
-    
-    Please return the information in JSON format like this:
-    {
-      "location": "city",
-      "supplier_name": "name",
-      "invoice_number": "number",
-      "gross_invoice_amount": "amount"
-    }
-    
-    Invoice text:
-    ${mockPdfText}`;
-
-    console.log('Sending prompt to OpenAI:', prompt);
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are an invoice processing assistant. Extract invoice details and return them in JSON format.' },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error('Failed to process with OpenAI');
-    }
-
-    const data = await response.json();
-    console.log('OpenAI response:', data);
-    
-    const extractedDetails = data.choices[0].message.content;
-
-    return new Response(JSON.stringify({ details: extractedDetails }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ details: mockDetails }),
+      {
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
+      }
+    );
   } catch (error) {
     console.error('Error processing invoice:', error);
     return new Response(
