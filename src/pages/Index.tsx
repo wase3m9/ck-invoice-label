@@ -11,12 +11,55 @@ interface ProcessedFile {
   size: number;
   status: ProcessingState;
   downloadUrl?: string;
+  details?: {
+    location: string;
+    supplier_name: string;
+    invoice_number: string;
+    gross_invoice_amount: string;
+  };
 }
 
 const Index = () => {
   const [files, setFiles] = useState<ProcessedFile[]>([]);
 
-  const handleFilesDrop = (droppedFiles: File[]) => {
+  const processFile = async (file: File) => {
+    try {
+      // First, read the PDF text (in a real implementation, we'd use a PDF parsing library)
+      const text = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          resolve(e.target?.result as string);
+        };
+        reader.readAsText(file);
+      });
+
+      // Process the PDF text with GPT
+      const response = await fetch('/functions/process-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pdfText: text }),
+      });
+
+      if (!response.ok) throw new Error('Failed to process invoice');
+
+      const { details } = await response.json();
+      const parsedDetails = JSON.parse(details);
+
+      // Generate new filename based on extracted details
+      const newFilename = `${parsedDetails.location} - ${parsedDetails.supplier_name} ${parsedDetails.invoice_number} £${parsedDetails.gross_invoice_amount}.pdf`;
+
+      return {
+        name: newFilename,
+        details: parsedDetails,
+        downloadUrl: '#', // In real implementation, this would be the actual download URL
+      };
+    } catch (error) {
+      console.error('Error processing file:', error);
+      throw error;
+    }
+  };
+
+  const handleFilesDrop = async (droppedFiles: File[]) => {
     const newFiles = droppedFiles.map(file => ({
       name: file.name,
       size: file.size,
@@ -25,24 +68,44 @@ const Index = () => {
 
     setFiles(prev => [...prev, ...newFiles]);
 
-    // Simulate processing
-    newFiles.forEach((file, index) => {
-      setTimeout(() => {
+    // Process each file
+    for (let i = 0; i < droppedFiles.length; i++) {
+      const file = droppedFiles[i];
+      try {
+        const processedDetails = await processFile(file);
+        
         setFiles(prev => {
           const updated = [...prev];
           const fileIndex = prev.findIndex(f => f.name === file.name);
           if (fileIndex !== -1) {
             updated[fileIndex] = {
               ...updated[fileIndex],
+              name: processedDetails.name,
               status: 'success',
-              downloadUrl: '#' // In real implementation, this would be the actual download URL
+              downloadUrl: processedDetails.downloadUrl,
+              details: processedDetails.details,
             };
           }
           return updated;
         });
+        
         toast.success(`${file.name} processed successfully`);
-      }, (index + 1) * 1500);
-    });
+      } catch (error) {
+        setFiles(prev => {
+          const updated = [...prev];
+          const fileIndex = prev.findIndex(f => f.name === file.name);
+          if (fileIndex !== -1) {
+            updated[fileIndex] = {
+              ...updated[fileIndex],
+              status: 'error',
+            };
+          }
+          return updated;
+        });
+        
+        toast.error(`Failed to process ${file.name}`);
+      }
+    }
   };
 
   const handleDownload = (file: ProcessedFile) => {
