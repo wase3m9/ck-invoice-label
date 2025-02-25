@@ -1,6 +1,6 @@
 
 import { ProcessingStatus, ProcessingState } from './ProcessingStatus';
-import { FileText, Download, Save } from 'lucide-react';
+import { FileText, Save } from 'lucide-react';
 
 interface FileItem {
   name: string;
@@ -11,11 +11,10 @@ interface FileItem {
 
 interface FileListProps {
   files: FileItem[];
-  onDownload?: (file: FileItem) => void;
   onSave?: (file: FileItem) => void;
 }
 
-export const FileList = ({ files, onDownload, onSave }: FileListProps) => {
+export const FileList = ({ files, onSave }: FileListProps) => {
   if (files.length === 0) return null;
 
   return (
@@ -36,22 +35,13 @@ export const FileList = ({ files, onDownload, onSave }: FileListProps) => {
           <div className="flex items-center gap-4">
             <ProcessingStatus state={file.status} />
             {file.downloadUrl && (
-              <>
-                <button
-                  onClick={() => onDownload?.(file)}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  title="View file"
-                >
-                  <Download className="h-5 w-5 text-accent" />
-                </button>
-                <button
-                  onClick={() => onSave?.(file)}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  title="Save file"
-                >
-                  <Save className="h-5 w-5 text-accent" />
-                </button>
-              </>
+              <button
+                onClick={() => onSave?.(file)}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                title="Save file"
+              >
+                <Save className="h-5 w-5 text-accent" />
+              </button>
             )}
           </div>
         </div>

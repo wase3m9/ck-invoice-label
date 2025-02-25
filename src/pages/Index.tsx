@@ -153,13 +153,6 @@ const Index = () => {
     }
   };
 
-  const handleDownload = async (file: ProcessedFile) => {
-    if (file.downloadUrl) {
-      window.open(file.downloadUrl, '_blank');
-      toast.success(`Opening ${file.name}`);
-    }
-  };
-
   const handleSave = async (file: ProcessedFile) => {
     if (file.downloadUrl) {
       try {
@@ -217,7 +210,6 @@ const Index = () => {
             </div>
             <FileList 
               files={files} 
-              onDownload={handleDownload}
               onSave={handleSave}
             />
           </div>
