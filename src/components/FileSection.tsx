@@ -35,12 +35,13 @@ export const FileSection = ({ files, onSave, onDelete }: FileSectionProps) => {
         return;
       }
 
-      const { data } = await supabase.functions.invoke('create-zip', {
+      // Use fetch directly to get the binary response
+      const { data: { url } } = await supabase.functions.invoke('create-zip', {
         body: { files: downloadableFiles }
       });
 
-      // Convert the response to a blob
-      const blob = await data.blob();
+      const response = await fetch(url);
+      const blob = await response.blob();
 
       try {
         // Try to use the File System Access API first

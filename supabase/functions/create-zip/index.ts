@@ -47,16 +47,36 @@ serve(async (req) => {
     }
 
     // Generate the zip file
-    const zipContent = await zip.generateAsync({ type: 'arraybuffer' })
+    const zipContent = await zip.generateAsync({ type: 'blob' })
+
+    // Upload the zip file to a temporary location in storage
+    const zipFileName = `temp/invoices-${Date.now()}.zip`
+    const { error: uploadError } = await supabase.storage
+      .from('pdfs')
+      .upload(zipFileName, zipContent)
+
+    if (uploadError) {
+      throw new Error('Failed to upload zip file')
+    }
+
+    // Get a signed URL for the zip file
+    const { data: { signedUrl }, error: signedUrlError } = await supabase.storage
+      .from('pdfs')
+      .createSignedUrl(zipFileName, 300) // URL expires in 5 minutes
+
+    if (signedUrlError) {
+      throw new Error('Failed to create signed URL')
+    }
+
+    // Clean up the temporary zip file in the background
+    setTimeout(async () => {
+      await supabase.storage.from('pdfs').remove([zipFileName])
+    }, 310000) // Delete after URL expires
 
     return new Response(
-      zipContent,
+      JSON.stringify({ url: signedUrl }),
       {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/zip',
-          'Content-Disposition': `attachment; filename="invoices-${new Date().toISOString().slice(0,10)}.zip"`,
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     )
