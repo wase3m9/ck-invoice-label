@@ -1,6 +1,8 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { PDFDocument } from "https://cdn.skypack.dev/pdf-lib";
+import { Canvas } from "https://deno.land/x/canvas/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +10,32 @@ const corsHeaders = {
 };
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+
+async function convertPDFToImage(pdfBuffer: ArrayBuffer): Promise<string> {
+  try {
+    // Load the PDF document
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    const page = await pdfDoc.getPage(0); // Get first page
+    const { width, height } = page.getSize();
+    
+    // Create a canvas and render the PDF page
+    const canvas = new Canvas(width, height);
+    const context = canvas.getContext('2d');
+    
+    // Draw the PDF page on the canvas (simplified version - just the first page)
+    const pdfImage = await page.render({
+      context,
+      width,
+      height
+    });
+    
+    // Convert canvas to base64 PNG
+    return canvas.toDataURL('image/png');
+  } catch (error) {
+    console.error('Error converting PDF to image:', error);
+    throw new Error('Failed to convert PDF to image');
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -22,11 +50,13 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    // Convert PDF to base64
-    const buffer = await file.arrayBuffer();
-    const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+    // Convert PDF to ArrayBuffer
+    const pdfBuffer = await file.arrayBuffer();
+    
+    // Convert PDF first page to PNG image
+    const imageBase64 = await convertPDFToImage(pdfBuffer);
 
-    // Call OpenAI API with the PDF content
+    // Call OpenAI API with the image content
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -50,7 +80,7 @@ serve(async (req) => {
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:application/pdf;base64,${base64String}`
+                  url: imageBase64
                 }
               }
             ]
