@@ -1,54 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from 'sonner';
 import { ProcessedFile } from '../types/file';
-
-// Add type definition for the File System Access API
-declare global {
-  interface Window {
-    showSaveFilePicker?: (options?: {
-      suggestedName?: string;
-      types?: Array<{
-        description: string;
-        accept: Record<string, string[]>;
-      }>;
-    }) => Promise<FileSystemFileHandle>;
-  }
-}
-
-const downloadWithFilePicker = async (blob: Blob, fileName: string): Promise<void> => {
-  if (!window.showSaveFilePicker) {
-    throw new Error('File System Access API not supported');
-  }
-
-  const handle = await window.showSaveFilePicker({
-    suggestedName: fileName,
-    types: [{
-      description: 'PDF Document',
-      accept: {
-        'application/pdf': ['.pdf'],
-      },
-    }],
-  });
-  
-  const writable = await handle.createWritable();
-  await writable.write(blob);
-  await writable.close();
-};
-
-const downloadFallback = (blob: Blob, fileName: string): void => {
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.style.display = 'none';
-  link.href = url;
-  link.download = fileName;
-  
-  document.body.appendChild(link);
-  link.click();
-  
-  window.URL.revokeObjectURL(url);
-  document.body.removeChild(link);
-};
 
 export const downloadFile = async (file: ProcessedFile): Promise<void> => {
   if (!file.downloadUrl || !file.filePath) {
@@ -70,22 +22,24 @@ export const downloadFile = async (file: ProcessedFile): Promise<void> => {
   const response = await fetch(file.downloadUrl);
   const blob = await response.blob();
   
-  try {
-    // Try using the File System Access API first
-    await downloadWithFilePicker(blob, file.name);
-    toast.success(`${file.name} saved successfully`);
-  } catch (err) {
-    // If File System Access API is not supported or user cancelled, use fallback
-    if (err.message === 'File System Access API not supported') {
-      downloadFallback(blob, file.name);
-      toast.success(`${file.name} downloaded successfully`);
-    } else if (err.name !== 'AbortError') {
-      // Only show error if it's not a user cancellation
-      console.error('Error saving file:', err);
-      toast.error(`Failed to save ${file.name}`);
-      throw err;
-    }
-  }
+  // Create object URL and trigger download dialog
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.style.display = 'none';
+  link.href = url;
+  link.download = file.name; // This will suggest the filename in the save dialog
+  link.target = '_blank'; // This helps trigger the "Save As" dialog in more browsers
+  
+  document.body.appendChild(link);
+  link.click();
+  
+  // Clean up
+  setTimeout(() => {
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }, 100);
+
+  toast.success(`${file.name} ready to save`);
 };
 
 export const deleteFile = async (file: ProcessedFile): Promise<void> => {
