@@ -26,10 +26,10 @@ const Login = () => {
           <img
             src="/lovable-uploads/5574e1a3-6ab7-4e5b-aaf8-f74b255fe514.png"
             alt="CloudKeepers Logo"
-            className="h-16 mb-8" /* Changed from h-20 to h-16 */
+            className="h-16 mb-8"
           />
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            PDF Invoice Organiser
+            PDF Invoice Label
           </h1>
           <p className="text-gray-600 text-center">
             Enter access code to continue
