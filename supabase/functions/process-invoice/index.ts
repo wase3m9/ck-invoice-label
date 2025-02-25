@@ -1,8 +1,6 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { PDFDocument } from "https://cdn.skypack.dev/pdf-lib";
-import { Canvas } from "https://deno.land/x/canvas/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,32 +8,6 @@ const corsHeaders = {
 };
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
-async function convertPDFToImage(pdfBuffer: ArrayBuffer): Promise<string> {
-  try {
-    // Load the PDF document
-    const pdfDoc = await PDFDocument.load(pdfBuffer);
-    const page = await pdfDoc.getPage(0); // Get first page
-    const { width, height } = page.getSize();
-    
-    // Create a canvas and render the PDF page
-    const canvas = new Canvas(width, height);
-    const context = canvas.getContext('2d');
-    
-    // Draw the PDF page on the canvas (simplified version - just the first page)
-    const pdfImage = await page.render({
-      context,
-      width,
-      height
-    });
-    
-    // Convert canvas to base64 PNG
-    return canvas.toDataURL('image/png');
-  } catch (error) {
-    console.error('Error converting PDF to image:', error);
-    throw new Error('Failed to convert PDF to image');
-  }
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -50,13 +22,12 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    // Convert PDF to ArrayBuffer
-    const pdfBuffer = await file.arrayBuffer();
-    
-    // Convert PDF first page to PNG image
-    const imageBase64 = await convertPDFToImage(pdfBuffer);
+    // Convert file to base64
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const base64String = btoa(String.fromCharCode.apply(null, uint8Array));
 
-    // Call OpenAI API with the image content
+    // Call OpenAI API
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -68,7 +39,10 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are an AI trained to extract invoice details. Please extract the following information: location (office location), supplier name (company that issued the invoice), invoice number, and gross invoice amount (total amount including taxes). Return ONLY a JSON object with these fields: location, supplier_name, invoice_number, gross_invoice_amount"
+            content: `You are an AI trained to extract invoice details. You'll receive a PDF file converted to base64. 
+                     Please extract the following information: location (office location), supplier name (company that issued the invoice), 
+                     invoice number, and gross invoice amount (total amount including taxes). 
+                     Return ONLY a JSON object with these fields: location, supplier_name, invoice_number, gross_invoice_amount`
           },
           {
             role: "user",
@@ -80,7 +54,7 @@ serve(async (req) => {
               {
                 type: "image_url",
                 image_url: {
-                  url: imageBase64
+                  url: `data:application/pdf;base64,${base64String}`
                 }
               }
             ]
@@ -96,12 +70,11 @@ serve(async (req) => {
     }
 
     const openAIData = await openAIResponse.json();
-    let extractedDetails;
     
     try {
       // Try to parse the JSON from the response
       const responseText = openAIData.choices[0].message.content;
-      extractedDetails = JSON.parse(responseText);
+      const extractedDetails = JSON.parse(responseText);
 
       // Validate the extracted details
       if (!extractedDetails.location || 
