@@ -31,7 +31,8 @@ async function extractTextFromPDF(pdfData: ArrayBuffer): Promise<string> {
       fullText += pageText + '\n';
     }
     
-    console.log('Extracted text from PDF:', fullText);
+    console.log('Extracted text length:', fullText.length);
+    console.log('First 500 characters of extracted text:', fullText.substring(0, 500));
     return fullText;
   } catch (error) {
     console.error('Error extracting text from PDF:', error);
@@ -58,6 +59,10 @@ serve(async (req) => {
     const pdfArrayBuffer = await file.arrayBuffer();
     const extractedText = await extractTextFromPDF(pdfArrayBuffer);
 
+    if (!extractedText || extractedText.trim().length === 0) {
+      throw new Error('No text could be extracted from the PDF');
+    }
+
     console.log('Successfully extracted text from PDF');
 
     // Call OpenAI API with extracted text
@@ -72,26 +77,31 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an AI trained to extract invoice details from text. The invoice will be from one of these specific locations: ${VALID_LOCATIONS.join(', ')}. 
-                     First, search the text carefully to identify which of these locations appears in the document.
+            content: `Extract invoice details from the following text. The location MUST be one of: ${VALID_LOCATIONS.join(', ')}. 
                      
-                     Then extract:
-                     1. Location (MUST be one of: ${VALID_LOCATIONS.join(', ')})
-                     2. Supplier name (company that issued the invoice)
-                     3. Invoice number
-                     4. Gross invoice amount (total including taxes)
+                     Return a JSON object with these exact fields:
+                     - location (must be one of the valid locations listed above)
+                     - supplier_name (company that issued the invoice)
+                     - invoice_number
+                     - gross_invoice_amount (as a number without currency symbols)
                      
-                     Return ONLY a JSON object with these exact fields: location, supplier_name, invoice_number, gross_invoice_amount.
-                     The location field MUST be exactly one of the valid locations listed above.
-                     Format the amount as a plain number without currency symbols.
+                     Example format:
+                     {
+                       "location": "Brighton",
+                       "supplier_name": "ABC Company",
+                       "invoice_number": "INV-123",
+                       "gross_invoice_amount": "1234.56"
+                     }
                      
-                     If none of the valid locations are found in the text, use the most likely location based on any address or geographical information in the document.`
+                     If you cannot find a specific location, use contextual clues to determine the most likely location from the valid list.
+                     Return ONLY the JSON object, no other text.`
           },
           {
             role: "user",
             content: extractedText
           }
         ],
+        temperature: 0, // Add this to make responses more consistent
         max_tokens: 1000
       }),
     });
@@ -103,44 +113,52 @@ serve(async (req) => {
     }
 
     const openAIData = await openAIResponse.json();
-    console.log('Raw OpenAI response:', openAIData);
+    
+    if (!openAIData.choices || !openAIData.choices[0] || !openAIData.choices[0].message) {
+      console.error('Unexpected OpenAI response structure:', openAIData);
+      throw new Error('Invalid response from OpenAI');
+    }
+
+    const responseText = openAIData.choices[0].message.content.trim();
+    console.log('OpenAI response text:', responseText);
 
     try {
-      const responseText = openAIData.choices[0].message.content;
-      console.log('OpenAI content:', responseText);
-
       const extractedDetails = JSON.parse(responseText);
+      console.log('Parsed response:', extractedDetails);
 
       // Validate required fields
       const requiredFields = ['location', 'supplier_name', 'invoice_number', 'gross_invoice_amount'];
-      for (const field of requiredFields) {
-        if (!extractedDetails[field]) {
-          console.error(`Missing required field: ${field}`);
-          throw new Error(`Missing required field: ${field}`);
-        }
+      const missingFields = requiredFields.filter(field => !extractedDetails[field]);
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
       }
 
       // Validate location is one of the allowed values
       if (!VALID_LOCATIONS.includes(extractedDetails.location)) {
-        console.error('Invalid location:', extractedDetails.location);
-        throw new Error(`Invalid location. Must be one of: ${VALID_LOCATIONS.join(', ')}`);
+        throw new Error(`Invalid location "${extractedDetails.location}". Must be one of: ${VALID_LOCATIONS.join(', ')}`);
       }
 
-      // Clean up amount format - remove any non-numeric characters except decimal point
+      // Clean up amount format
       extractedDetails.gross_invoice_amount = extractedDetails.gross_invoice_amount
         .toString()
         .replace(/[^0-9.]/g, '')
         .trim();
 
-      console.log('Successfully extracted details:', extractedDetails);
+      if (!extractedDetails.gross_invoice_amount || isNaN(parseFloat(extractedDetails.gross_invoice_amount))) {
+        throw new Error('Invalid gross invoice amount');
+      }
+
+      console.log('Successfully validated details:', extractedDetails);
       
       return new Response(
         JSON.stringify({ details: extractedDetails }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError);
-      throw new Error('Failed to parse extracted invoice details');
+      console.error('Error processing OpenAI response:', parseError);
+      console.error('Raw response text:', responseText);
+      throw new Error(`Failed to parse invoice details: ${parseError.message}`);
     }
   } catch (error) {
     console.error('Error processing invoice:', error);
