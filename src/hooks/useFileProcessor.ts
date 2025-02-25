@@ -145,8 +145,20 @@ export const useFileProcessor = (labelFormat: string[], generateFileName: (detai
   };
 
   const handleSave = async (file: ProcessedFile) => {
-    if (file.downloadUrl) {
+    if (file.downloadUrl && file.filePath) {
       try {
+        // First update the downloaded_at timestamp
+        const { error: updateError } = await supabase
+          .from('invoices')
+          .update({ downloaded_at: new Date().toISOString() })
+          .eq('file_path', file.filePath);
+
+        if (updateError) {
+          console.error('Error updating download timestamp:', updateError);
+          throw updateError;
+        }
+
+        // Then download the file
         const response = await fetch(file.downloadUrl);
         const blob = await response.blob();
         
@@ -159,7 +171,7 @@ export const useFileProcessor = (labelFormat: string[], generateFileName: (detai
         document.body.removeChild(downloadLink);
         URL.revokeObjectURL(downloadLink.href);
         
-        toast.success(`Saving ${file.name} to downloads`);
+        toast.success(`${file.name} downloaded. File will be removed in 10 minutes.`);
       } catch (error) {
         console.error('Error saving file:', error);
         toast.error(`Failed to save ${file.name}`);
@@ -185,6 +197,7 @@ export const useFileProcessor = (labelFormat: string[], generateFileName: (detai
       }
 
       setFiles(prev => prev.filter(f => f.name !== file.name));
+      toast.success(`${file.name} deleted successfully`);
     } catch (error) {
       console.error('Error deleting file:', error);
       throw error;

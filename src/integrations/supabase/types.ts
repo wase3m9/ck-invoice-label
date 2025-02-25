@@ -12,6 +12,7 @@ export type Database = {
       invoices: {
         Row: {
           created_at: string | null
+          downloaded_at: string | null
           file_path: string
           gross_invoice_amount: number
           id: string
@@ -24,6 +25,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          downloaded_at?: string | null
           file_path: string
           gross_invoice_amount: number
           id?: string
@@ -36,6 +38,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          downloaded_at?: string | null
           file_path?: string
           gross_invoice_amount?: number
           id?: string
@@ -53,7 +56,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_files: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
