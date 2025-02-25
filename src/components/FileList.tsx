@@ -24,7 +24,7 @@ export const FileList = ({ files, onSave, onDelete }: FileListProps) => {
       {files.map((file, index) => (
         <div key={index} className="file-item flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <FileText className="h-8 w-8 text-accent" />
+            <FileText className="h-8 w-8 text-foreground" />
             <div>
               <p className="font-medium text-gray-900 truncate max-w-[300px]">
                 {file.name}
@@ -43,7 +43,7 @@ export const FileList = ({ files, onSave, onDelete }: FileListProps) => {
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                   title="Save file"
                 >
-                  <Save className="h-5 w-5 text-primary" />
+                  <Save className="h-5 w-5 text-foreground" />
                 </button>
                 <button
                   onClick={() => onDelete?.(file)}
