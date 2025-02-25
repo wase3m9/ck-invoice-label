@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { FileUpload } from '../components/FileUpload';
 import { FileList } from '../components/FileList';
@@ -5,6 +6,7 @@ import { ProcessingState } from '../components/ProcessingStatus';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from "@/integrations/supabase/client";
+import { LabelFormatConfig, LabelField } from '../components/LabelFormatConfig';
 
 interface ProcessedFile {
   name: string;
@@ -19,8 +21,38 @@ interface ProcessedFile {
   };
 }
 
+const DEFAULT_FIELDS: LabelField[] = [
+  { id: 'location', label: 'Location' },
+  { id: 'supplier_name', label: 'Supplier Name' },
+  { id: 'invoice_number', label: 'Invoice Number' },
+  { id: 'gross_invoice_amount', label: 'Amount', prefix: '£' }
+];
+
+const DEFAULT_FORMAT = ['location', 'supplier_name', 'invoice_number', 'gross_invoice_amount'];
+
 const Index = () => {
   const [files, setFiles] = useState<ProcessedFile[]>([]);
+  const [labelFormat, setLabelFormat] = useState<string[]>(DEFAULT_FORMAT);
+
+  const handleFormatChange = (fieldId: string, position: number) => {
+    const newFormat = [...labelFormat];
+    newFormat[position] = fieldId;
+    setLabelFormat(newFormat);
+  };
+
+  const generateFileName = (details: ProcessedFile['details']) => {
+    if (!details) return '';
+
+    const parts = labelFormat.map(fieldId => {
+      const field = DEFAULT_FIELDS.find(f => f.id === fieldId);
+      if (!field) return '';
+
+      const value = details[field.id as keyof typeof details];
+      return field.prefix ? `${field.prefix}${value}` : value;
+    });
+
+    return parts.join(' - ') + '.pdf';
+  };
 
   const processFile = async (file: File) => {
     try {
@@ -45,7 +77,6 @@ const Index = () => {
       formData.append('file', file);
 
       console.log('Processing with edge function...');
-      // Process the PDF with edge function
       const response = await fetch('https://yjhamwwwryfswimjjzgt.supabase.co/functions/v1/process-invoice', {
         method: 'POST',
         headers: {
@@ -64,12 +95,9 @@ const Index = () => {
       console.log('Edge function response:', data);
       
       const extractedDetails = data.details;
-
-      // Generate new filename based on extracted details
-      const newFilename = `${extractedDetails.location} - ${extractedDetails.supplier_name} ${extractedDetails.invoice_number} £${extractedDetails.gross_invoice_amount}.pdf`;
+      const newFilename = generateFileName(extractedDetails);
 
       console.log('Saving to database...');
-      // Store invoice details in the database
       const { error: dbError } = await supabase
         .from('invoices')
         .insert({
@@ -87,7 +115,6 @@ const Index = () => {
         throw new Error('Failed to save invoice details');
       }
 
-      // Get the download URL
       const { data: { publicUrl } } = supabase.storage
         .from('pdfs')
         .getPublicUrl(filePath);
@@ -191,6 +218,13 @@ const Index = () => {
         </div>
 
         <div className="glass-card p-8 mb-8">
+          <div className="mb-8">
+            <LabelFormatConfig
+              fields={DEFAULT_FIELDS}
+              selectedFormat={labelFormat}
+              onFormatChange={handleFormatChange}
+            />
+          </div>
           <FileUpload onFilesDrop={handleFilesDrop} />
         </div>
 
