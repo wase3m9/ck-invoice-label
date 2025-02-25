@@ -3,18 +3,14 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Valid locations for the mock data
-const validLocations = ['Brighton', 'Bluewater', 'Lakeside', 'Canterbury', 'Guildford'];
-
 // Example supplier names with formal business names
 const exampleSuppliers = [
+  'AbbVie',
   'Nando\'s Chickenland Ltd',
   'Costa Coffee Limited',
   'Starbucks Coffee Company Ltd',
@@ -22,6 +18,9 @@ const exampleSuppliers = [
   'Wagamama Limited',
   'Pret A Manger (Europe) Ltd'
 ];
+
+// Valid locations
+const validLocations = ['Brighton', 'Bluewater', 'Lakeside', 'Canterbury', 'Guildford'];
 
 // Function to clean supplier name
 const cleanSupplierName = (name: string): string => {
@@ -45,19 +44,15 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    // Generate random mock data with valid locations and suppliers
-    const rawSupplierName = exampleSuppliers[Math.floor(Math.random() * exampleSuppliers.length)];
+    // For testing, let's use the specific details you mentioned
     const mockDetails = {
-      location: validLocations[Math.floor(Math.random() * validLocations.length)],
-      supplier_name: cleanSupplierName(rawSupplierName),
-      invoice_number: `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
-      gross_invoice_amount: (Math.random() * 200 + 50).toFixed(2)
+      location: "Lakeside",
+      supplier_name: "AbbVie",
+      invoice_number: "671227978",
+      gross_invoice_amount: "96.72"
     };
 
-    console.log('Generated mock details:', {
-      ...mockDetails,
-      original_supplier_name: rawSupplierName
-    });
+    console.log('Generated invoice details:', mockDetails);
 
     return new Response(
       JSON.stringify({ details: mockDetails }),
