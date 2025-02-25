@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
@@ -22,12 +23,14 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    // Convert the file to ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer();
-    const pdfData = new Uint8Array(arrayBuffer);
-    
-    // Extract text from PDF
-    const pdfText = "Sample PDF text"; // We'll replace this with actual PDF parsing in Deno
+    // For now, we'll use a mock text extraction since PDF parsing in Deno is limited
+    // In a production environment, you'd want to use a proper PDF parsing service
+    const mockPdfText = `
+      Invoice Number: INV-2024-001
+      Location: London
+      Supplier: Office Supplies Limited
+      Amount: £250.00
+    `;
 
     const prompt = `Extract the following details from this invoice:
     - Location (City/Region)
@@ -44,7 +47,7 @@ serve(async (req) => {
     }
     
     Invoice text:
-    ${pdfText}`;
+    ${mockPdfText}`;
 
     console.log('Sending prompt to OpenAI:', prompt);
 
@@ -79,9 +82,12 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error processing invoice:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
+    );
   }
 });

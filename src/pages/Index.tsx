@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { FileUpload } from '../components/FileUpload';
 import { FileList } from '../components/FileList';
@@ -39,7 +40,7 @@ const Index = () => {
       formData.append('file', file);
 
       // Process the PDF with GPT
-      const response = await fetch('/functions/process-invoice', {
+      const response = await fetch('https://yjhamwwwryfswimjjzgt.supabase.co/functions/v1/process-invoice', {
         method: 'POST',
         body: formData,
       });
