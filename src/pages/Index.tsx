@@ -4,6 +4,7 @@ import { FileUpload } from '../components/FileUpload';
 import { FileSection } from '../components/FileSection';
 import { LabelFormatConfig, LabelField } from '../components/LabelFormatConfig';
 import { useFileProcessor } from '../hooks/useFileProcessor';
+import { toast } from 'sonner';
 
 const DEFAULT_FIELDS: LabelField[] = [
   { id: 'location', label: 'Location' },
@@ -42,7 +43,16 @@ const Index = () => {
     return parts.join(' - ') + '.pdf';
   };
 
-  const { files, handleFilesDrop, handleSave } = useFileProcessor(labelFormat, generateFileName);
+  const { files, handleFilesDrop, handleSave, handleDelete } = useFileProcessor(labelFormat, generateFileName);
+
+  const onDelete = async (file: any) => {
+    try {
+      await handleDelete(file);
+      toast.success(`${file.name} deleted successfully`);
+    } catch (error) {
+      toast.error(`Failed to delete ${file.name}`);
+    }
+  };
 
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
@@ -68,7 +78,11 @@ const Index = () => {
           <FileUpload onFilesDrop={handleFilesDrop} />
         </div>
 
-        <FileSection files={files} onSave={handleSave} />
+        <FileSection 
+          files={files} 
+          onSave={handleSave}
+          onDelete={onDelete}
+        />
       </div>
     </div>
   );

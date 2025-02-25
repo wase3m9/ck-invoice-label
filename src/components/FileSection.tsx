@@ -1,5 +1,5 @@
 
-import { Download } from 'lucide-react';
+import { Download, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FileList } from './FileList';
 import { ProcessedFile } from '../hooks/useFileProcessor';
@@ -7,9 +7,10 @@ import { ProcessedFile } from '../hooks/useFileProcessor';
 interface FileSectionProps {
   files: ProcessedFile[];
   onSave: (file: ProcessedFile) => void;
+  onDelete: (file: ProcessedFile) => void;
 }
 
-export const FileSection = ({ files, onSave }: FileSectionProps) => {
+export const FileSection = ({ files, onSave, onDelete }: FileSectionProps) => {
   if (files.length === 0) return null;
 
   return (
@@ -29,6 +30,7 @@ export const FileSection = ({ files, onSave }: FileSectionProps) => {
       <FileList 
         files={files} 
         onSave={onSave}
+        onDelete={onDelete}
       />
     </div>
   );

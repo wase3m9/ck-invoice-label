@@ -15,6 +15,7 @@ export interface ProcessedFile {
     invoice_number: string;
     gross_invoice_amount: string;
   };
+  filePath?: string;
 }
 
 export const useFileProcessor = (labelFormat: string[], generateFileName: (details: any) => string) => {
@@ -166,5 +167,29 @@ export const useFileProcessor = (labelFormat: string[], generateFileName: (detai
     }
   };
 
-  return { files, handleFilesDrop, handleSave };
+  const handleDelete = async (file: ProcessedFile) => {
+    try {
+      if (file.filePath) {
+        const { error: deleteError } = await supabase.storage
+          .from('pdfs')
+          .remove([file.filePath]);
+
+        if (deleteError) throw deleteError;
+
+        const { error: dbError } = await supabase
+          .from('invoices')
+          .delete()
+          .eq('file_path', file.filePath);
+
+        if (dbError) throw dbError;
+      }
+
+      setFiles(prev => prev.filter(f => f.name !== file.name));
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      throw error;
+    }
+  };
+
+  return { files, handleFilesDrop, handleSave, handleDelete };
 };
