@@ -10,6 +10,8 @@ const corsHeaders = {
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
+const VALID_LOCATIONS = ['Bluewater', 'Lakeside', 'Canterbury', 'Brighton', 'Guildford'];
+
 // Initialize PDF.js worker
 const pdfjsWorker = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.mjs');
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
@@ -70,13 +72,20 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an AI trained to extract invoice details from text. Given the text content of an invoice, extract:
-                     1. Location (office location)
+            content: `You are an AI trained to extract invoice details from text. The invoice will be from one of these specific locations: ${VALID_LOCATIONS.join(', ')}. 
+                     First, search the text carefully to identify which of these locations appears in the document.
+                     
+                     Then extract:
+                     1. Location (MUST be one of: ${VALID_LOCATIONS.join(', ')})
                      2. Supplier name (company that issued the invoice)
                      3. Invoice number
                      4. Gross invoice amount (total including taxes)
+                     
                      Return ONLY a JSON object with these exact fields: location, supplier_name, invoice_number, gross_invoice_amount.
-                     Format the amount as a plain number without currency symbols.`
+                     The location field MUST be exactly one of the valid locations listed above.
+                     Format the amount as a plain number without currency symbols.
+                     
+                     If none of the valid locations are found in the text, use the most likely location based on any address or geographical information in the document.`
           },
           {
             role: "user",
@@ -109,6 +118,12 @@ serve(async (req) => {
           console.error(`Missing required field: ${field}`);
           throw new Error(`Missing required field: ${field}`);
         }
+      }
+
+      // Validate location is one of the allowed values
+      if (!VALID_LOCATIONS.includes(extractedDetails.location)) {
+        console.error('Invalid location:', extractedDetails.location);
+        throw new Error(`Invalid location. Must be one of: ${VALID_LOCATIONS.join(', ')}`);
       }
 
       // Clean up amount format - remove any non-numeric characters except decimal point
