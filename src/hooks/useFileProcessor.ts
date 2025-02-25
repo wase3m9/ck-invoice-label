@@ -158,18 +158,26 @@ export const useFileProcessor = (labelFormat: string[], generateFileName: (detai
           throw updateError;
         }
 
-        // Then download the file
+        // Fetch the file and create a blob
         const response = await fetch(file.downloadUrl);
         const blob = await response.blob();
         
-        const downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = file.name;
+        // Create object URL for the blob
+        const url = window.URL.createObjectURL(blob);
         
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(downloadLink.href);
+        // Create invisible anchor element
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        link.href = url;
+        link.download = file.name; // This triggers "Save As" dialog
+        
+        // Add to document, click, and cleanup
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
         
         toast.success(`${file.name} downloaded. File will be removed in 10 minutes.`);
       } catch (error) {
