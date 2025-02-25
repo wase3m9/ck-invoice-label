@@ -17,7 +17,7 @@ export const FileUpload = ({ onFilesDrop }: FileUploadProps) => {
     accept: {
       'application/pdf': ['.pdf']
     },
-    maxFiles: 10,
+    maxFiles: 30,
   });
 
   return (
@@ -32,7 +32,7 @@ export const FileUpload = ({ onFilesDrop }: FileUploadProps) => {
           {isDragActive ? 'Drop PDFs here...' : 'Drag & drop PDFs here'}
         </p>
         <p className="mt-2 text-sm text-gray-500">
-          or click to select files (max 10 files)
+          or click to select files (max 30 files)
         </p>
       </div>
     </div>
