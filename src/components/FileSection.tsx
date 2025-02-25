@@ -2,7 +2,7 @@
 import { Download, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FileList } from './FileList';
-import { ProcessedFile } from '../hooks/useFileProcessor';
+import { ProcessedFile } from '../types/file';
 
 interface FileSectionProps {
   files: ProcessedFile[];
