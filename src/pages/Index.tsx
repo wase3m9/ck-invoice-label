@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { FileUpload } from '../components/FileUpload';
 import { FileList } from '../components/FileList';
@@ -157,7 +156,32 @@ const Index = () => {
   const handleDownload = async (file: ProcessedFile) => {
     if (file.downloadUrl) {
       window.open(file.downloadUrl, '_blank');
-      toast.success(`Downloading ${file.name}`);
+      toast.success(`Opening ${file.name}`);
+    }
+  };
+
+  const handleSave = async (file: ProcessedFile) => {
+    if (file.downloadUrl) {
+      try {
+        const response = await fetch(file.downloadUrl);
+        const blob = await response.blob();
+        
+        // Create a download link and trigger it
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = file.name; // This will be the formatted name
+        
+        // Append to document, click, and cleanup
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(downloadLink.href);
+        
+        toast.success(`Saving ${file.name} to downloads`);
+      } catch (error) {
+        console.error('Error saving file:', error);
+        toast.error(`Failed to save ${file.name}`);
+      }
     }
   };
 
@@ -191,7 +215,11 @@ const Index = () => {
                 Download All
               </button>
             </div>
-            <FileList files={files} onDownload={handleDownload} />
+            <FileList 
+              files={files} 
+              onDownload={handleDownload}
+              onSave={handleSave}
+            />
           </div>
         )}
       </div>
