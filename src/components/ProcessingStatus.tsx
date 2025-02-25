@@ -13,9 +13,9 @@ export const ProcessingStatus = ({ state }: ProcessingStatusProps) => {
     case 'idle':
       return <CircleOff className="h-5 w-5 text-gray-400" />;
     case 'processing':
-      return <Loader2 className="h-5 w-5 text-accent animate-spin" />;
+      return <Loader2 className="h-5 w-5 text-[#0EA5E9] animate-spin" />;
     case 'success':
-      return <CheckCircle2 className="h-5 w-5 text-accent" />;
+      return <CheckCircle2 className="h-5 w-5 text-[#0EA5E9]" />;
     case 'error':
       return <AlertCircle className="h-5 w-5 text-destructive" />;
   }
