@@ -1,35 +1,13 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Example supplier names with formal business names
-const exampleSuppliers = [
-  'AbbVie',
-  'Nando\'s Chickenland Ltd',
-  'Costa Coffee Limited',
-  'Starbucks Coffee Company Ltd',
-  'PizzaExpress Ltd',
-  'Wagamama Limited',
-  'Pret A Manger (Europe) Ltd'
-];
-
-// Valid locations
-const validLocations = ['Brighton', 'Bluewater', 'Lakeside', 'Canterbury', 'Guildford'];
-
-// Function to clean supplier name
-const cleanSupplierName = (name: string): string => {
-  return name
-    .replace(/(limited|ltd|llc|inc|plc|europe)\.?\)?$/i, '')  // Remove common business suffixes
-    .replace(/\(|\)/g, '')  // Remove parentheses
-    .replace(/\s+/g, ' ')   // Remove extra spaces
-    .trim();                // Trim leading/trailing spaces
-};
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -44,25 +22,81 @@ serve(async (req) => {
       throw new Error('No PDF file provided');
     }
 
-    // For testing, let's use the specific details you mentioned
-    const mockDetails = {
-      location: "Lakeside",
-      supplier_name: "AbbVie",
-      invoice_number: "671227978",
-      gross_invoice_amount: "96.72"
-    };
+    // Convert PDF to base64
+    const buffer = await file.arrayBuffer();
+    const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
-    console.log('Generated invoice details:', mockDetails);
+    // Call OpenAI API with the PDF content
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are an AI trained to extract invoice details. Please extract the following information: location (office location), supplier name (company that issued the invoice), invoice number, and gross invoice amount (total amount including taxes). Return ONLY a JSON object with these fields: location, supplier_name, invoice_number, gross_invoice_amount"
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "Please extract the invoice details from this document. Return only the JSON object with the required fields."
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:application/pdf;base64,${base64String}`
+                }
+              }
+            ]
+          }
+        ]
+      }),
+    });
 
-    return new Response(
-      JSON.stringify({ details: mockDetails }),
-      {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
+    if (!openAIResponse.ok) {
+      const errorData = await openAIResponse.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error('Failed to process invoice with OpenAI');
+    }
+
+    const openAIData = await openAIResponse.json();
+    let extractedDetails;
+    
+    try {
+      // Try to parse the JSON from the response
+      const responseText = openAIData.choices[0].message.content;
+      extractedDetails = JSON.parse(responseText);
+
+      // Validate the extracted details
+      if (!extractedDetails.location || 
+          !extractedDetails.supplier_name || 
+          !extractedDetails.invoice_number || 
+          !extractedDetails.gross_invoice_amount) {
+        throw new Error('Missing required fields in extracted details');
       }
-    );
+
+      // Clean up the amount format
+      extractedDetails.gross_invoice_amount = extractedDetails.gross_invoice_amount
+        .replace(/[^0-9.]/g, '') // Remove all non-numeric characters except decimal point
+        .trim();
+
+      console.log('Successfully extracted details:', extractedDetails);
+      
+      return new Response(
+        JSON.stringify({ details: extractedDetails }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      console.error('Raw OpenAI response:', openAIData.choices[0].message.content);
+      throw new Error('Failed to parse extracted invoice details');
+    }
   } catch (error) {
     console.error('Error processing invoice:', error);
     return new Response(
