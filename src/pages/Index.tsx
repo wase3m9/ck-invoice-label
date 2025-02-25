@@ -5,6 +5,7 @@ import { FileList } from '../components/FileList';
 import { ProcessingState } from '../components/ProcessingStatus';
 import { Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProcessedFile {
   name: string;
@@ -24,7 +25,17 @@ const Index = () => {
 
   const processFile = async (file: File) => {
     try {
-      // First, read the PDF text (in a real implementation, we'd use a PDF parsing library)
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${crypto.randomUUID()}.${fileExt}`;
+      
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from('pdfs')
+        .upload(filePath, file);
+
+      if (uploadError) throw new Error('Failed to upload file');
+
+      // Process the PDF text (in a real implementation, we'd use a PDF parsing library)
       const text = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -48,10 +59,30 @@ const Index = () => {
       // Generate new filename based on extracted details
       const newFilename = `${parsedDetails.location} - ${parsedDetails.supplier_name} ${parsedDetails.invoice_number} £${parsedDetails.gross_invoice_amount}.pdf`;
 
+      // Store invoice details in the database
+      const { error: dbError } = await supabase
+        .from('invoices')
+        .insert({
+          original_filename: file.name,
+          processed_filename: newFilename,
+          file_path: filePath,
+          location: parsedDetails.location,
+          supplier_name: parsedDetails.supplier_name,
+          invoice_number: parsedDetails.invoice_number,
+          gross_invoice_amount: parsedDetails.gross_invoice_amount
+        });
+
+      if (dbError) throw new Error('Failed to save invoice details');
+
+      // Get the download URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('pdfs')
+        .getPublicUrl(filePath);
+
       return {
         name: newFilename,
         details: parsedDetails,
-        downloadUrl: '#', // In real implementation, this would be the actual download URL
+        downloadUrl: publicUrl,
       };
     } catch (error) {
       console.error('Error processing file:', error);
@@ -108,9 +139,11 @@ const Index = () => {
     }
   };
 
-  const handleDownload = (file: ProcessedFile) => {
-    // In a real implementation, this would trigger the actual download
-    toast.info(`Downloading ${file.name}`);
+  const handleDownload = async (file: ProcessedFile) => {
+    if (file.downloadUrl) {
+      window.open(file.downloadUrl, '_blank');
+      toast.success(`Downloading ${file.name}`);
+    }
   };
 
   return (

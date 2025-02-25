@@ -9,7 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      invoices: {
+        Row: {
+          created_at: string | null
+          file_path: string
+          gross_invoice_amount: number
+          id: string
+          invoice_number: string
+          location: string
+          original_filename: string
+          processed_filename: string
+          supplier_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          file_path: string
+          gross_invoice_amount: number
+          id?: string
+          invoice_number: string
+          location: string
+          original_filename: string
+          processed_filename: string
+          supplier_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          file_path?: string
+          gross_invoice_amount?: number
+          id?: string
+          invoice_number?: string
+          location?: string
+          original_filename?: string
+          processed_filename?: string
+          supplier_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
