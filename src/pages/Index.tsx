@@ -36,7 +36,7 @@ const Index = () => {
 
   const handleFormatChange = (fieldId: string, position: number) => {
     const newFormat = [...labelFormat];
-    newFormat[position] = fieldId;
+    newFormat[position] = fieldId === "none" ? "" : fieldId;
     setLabelFormat(newFormat);
   };
 

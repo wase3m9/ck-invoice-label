@@ -26,14 +26,14 @@ export const LabelFormatConfig = ({ fields, selectedFormat, onFormatChange }: La
               Position {position + 1}
             </label>
             <Select
-              value={selectedFormat[position] || ""}
+              value={selectedFormat[position] || "none"}
               onValueChange={(value) => onFormatChange(value, position)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select field" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">
+                <SelectItem value="none">
                   (None)
                 </SelectItem>
                 {fields.map((field) => (
@@ -51,7 +51,7 @@ export const LabelFormatConfig = ({ fields, selectedFormat, onFormatChange }: La
       </div>
       <p className="text-sm text-gray-500 mt-2">
         Preview: {selectedFormat
-          .filter(fieldId => fieldId)
+          .filter(fieldId => fieldId && fieldId !== "none")
           .map((fieldId, index) => {
             const field = fields.find(f => f.id === fieldId);
             return field ? `${index > 0 ? ' - ' : ''}${field.label}` : '';
