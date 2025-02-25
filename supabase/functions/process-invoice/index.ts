@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import * as pdfjs from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.mjs';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +9,33 @@ const corsHeaders = {
 };
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+
+// Initialize PDF.js worker
+const pdfjsWorker = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.mjs');
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+async function extractTextFromPDF(pdfData: ArrayBuffer): Promise<string> {
+  try {
+    const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
+    let fullText = '';
+    
+    // Extract text from all pages
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ');
+      fullText += pageText + '\n';
+    }
+    
+    console.log('Extracted text from PDF:', fullText);
+    return fullText;
+  } catch (error) {
+    console.error('Error extracting text from PDF:', error);
+    throw new Error('Failed to extract text from PDF');
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,14 +52,13 @@ serve(async (req) => {
 
     console.log('Processing PDF file:', file.name);
 
-    // Convert PDF to base64
-    const arrayBuffer = await file.arrayBuffer();
-    const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
-    const dataUrl = `data:application/pdf;base64,${base64String}`;
+    // Extract text from PDF
+    const pdfArrayBuffer = await file.arrayBuffer();
+    const extractedText = await extractTextFromPDF(pdfArrayBuffer);
 
-    console.log('Successfully converted PDF to base64');
+    console.log('Successfully extracted text from PDF');
 
-    // Call OpenAI API
+    // Call OpenAI API with extracted text
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -43,7 +70,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an AI trained to analyze invoices. When given a PDF invoice, extract:
+            content: `You are an AI trained to extract invoice details from text. Given the text content of an invoice, extract:
                      1. Location (office location)
                      2. Supplier name (company that issued the invoice)
                      3. Invoice number
@@ -53,18 +80,7 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Extract the invoice details from this PDF. Return only the JSON object with the required fields."
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: dataUrl
-                }
-              }
-            ]
+            content: extractedText
           }
         ],
         max_tokens: 1000
