@@ -99,6 +99,16 @@ export const processFile = async (
 
   const data = await response.json();
   const extractedDetails = data.details;
+
+  // Format the amount with commas for thousands
+  if (extractedDetails.gross_invoice_amount) {
+    const amount = parseFloat(extractedDetails.gross_invoice_amount);
+    extractedDetails.gross_invoice_amount = amount.toLocaleString('en-GB', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
   const newFilename = generateFileName(extractedDetails);
 
   // Save to database
@@ -127,6 +137,6 @@ export const processFile = async (
     name: newFilename,
     details: extractedDetails,
     downloadUrl: publicUrl,
-    filePath: filePath, // Add filePath to return value
+    filePath: filePath,
   };
 };
