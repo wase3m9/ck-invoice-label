@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 const DEFAULT_FIELDS: LabelField[] = [
   { id: 'location', label: 'Location' },
   { id: 'supplier_name', label: 'Supplier Name' },
-  { id: 'invoice_number', label: 'Invoice Number' },
+  { id: 'invoice_number', label: 'Invoice Number', prefix: 'Inv ' },
   { id: 'gross_invoice_amount', label: 'Amount', prefix: '£' }
 ];
 
@@ -32,13 +32,18 @@ const Index = () => {
   const generateFileName = (details: Record<string, string>) => {
     if (!details) return '';
 
-    const parts = labelFormat.map(fieldId => {
-      const field = fields.find(f => f.id === fieldId);
-      if (!field) return '';
-
-      const value = details[field.id];
-      return field.prefix ? `${field.prefix}${value}` : value;
-    });
+    const parts = labelFormat
+      .filter(fieldId => fieldId && fieldId !== "none")
+      .map(fieldId => {
+        const field = fields.find(f => f.id === fieldId);
+        if (!field) return '';
+        
+        const value = details[field.id];
+        if (!value) return '';
+        
+        return field.prefix ? `${field.prefix}${value}` : value;
+      })
+      .filter(part => part !== '');
 
     return parts.join(' - ') + '.pdf';
   };
