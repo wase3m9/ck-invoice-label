@@ -13,15 +13,24 @@ const corsHeaders = {
 // Valid locations for the mock data
 const validLocations = ['Brighton', 'Bluewater', 'Lakeside', 'Canterbury', 'Guildford'];
 
-// Example supplier names
+// Example supplier names with formal business names
 const exampleSuppliers = [
-  'Nando\'s',
-  'Costa Coffee',
-  'Starbucks',
-  'Pizza Express',
-  'Wagamama',
-  'Pret A Manger'
+  'Nando\'s Chickenland Ltd',
+  'Costa Coffee Limited',
+  'Starbucks Coffee Company Ltd',
+  'PizzaExpress Ltd',
+  'Wagamama Limited',
+  'Pret A Manger (Europe) Ltd'
 ];
+
+// Function to clean supplier name
+const cleanSupplierName = (name: string): string => {
+  return name
+    .replace(/(limited|ltd|llc|inc|plc|europe)\.?\)?$/i, '')  // Remove common business suffixes
+    .replace(/\(|\)/g, '')  // Remove parentheses
+    .replace(/\s+/g, ' ')   // Remove extra spaces
+    .trim();                // Trim leading/trailing spaces
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -37,14 +46,18 @@ serve(async (req) => {
     }
 
     // Generate random mock data with valid locations and suppliers
+    const rawSupplierName = exampleSuppliers[Math.floor(Math.random() * exampleSuppliers.length)];
     const mockDetails = {
       location: validLocations[Math.floor(Math.random() * validLocations.length)],
-      supplier_name: exampleSuppliers[Math.floor(Math.random() * exampleSuppliers.length)],
+      supplier_name: cleanSupplierName(rawSupplierName),
       invoice_number: `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
       gross_invoice_amount: (Math.random() * 200 + 50).toFixed(2)
     };
 
-    console.log('Generated mock details:', mockDetails);
+    console.log('Generated mock details:', {
+      ...mockDetails,
+      original_supplier_name: rawSupplierName
+    });
 
     return new Response(
       JSON.stringify({ details: mockDetails }),
