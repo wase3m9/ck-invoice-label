@@ -23,10 +23,10 @@ export const FileList = ({ files, onSave, onDelete }: FileListProps) => {
     <div className="space-y-4">
       {files.map((file, index) => (
         <div key={index} className="file-item flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <FileText className="h-8 w-8 text-foreground" />
-            <div>
-              <p className="font-medium text-gray-900 truncate max-w-[300px]">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <FileText className="h-8 w-8 text-foreground flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-gray-900 break-all pr-4">
                 {file.name}
               </p>
               <p className="text-sm text-gray-500">
@@ -34,7 +34,7 @@ export const FileList = ({ files, onSave, onDelete }: FileListProps) => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-shrink-0">
             <ProcessingStatus state={file.status} />
             {file.downloadUrl && (
               <>
