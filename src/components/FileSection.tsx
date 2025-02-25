@@ -19,7 +19,7 @@ export const FileSection = ({ files, onSave }: FileSectionProps) => {
           Uploaded Files
         </h2>
         <button
-          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-accent hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-colors"
+          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-accent hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-colors"
           onClick={() => toast.info('Downloading all files')}
         >
           <Download className="h-4 w-4 mr-2" />

@@ -17,7 +17,7 @@ export const LabelFormatConfig = ({ fields, selectedFormat, onFormatChange }: La
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium text-gray-900 mb-2">
-        Customize Label Format
+        Customise Label Format
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[0, 1, 2, 3].map((position) => (
@@ -29,7 +29,7 @@ export const LabelFormatConfig = ({ fields, selectedFormat, onFormatChange }: La
               value={selectedFormat[position] || "none"}
               onValueChange={(value) => onFormatChange(value, position)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full bg-white/50 backdrop-blur-sm">
                 <SelectValue placeholder="Select field" />
               </SelectTrigger>
               <SelectContent>

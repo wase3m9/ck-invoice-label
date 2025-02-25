@@ -40,14 +40,14 @@ const Index = () => {
   const { files, handleFilesDrop, handleSave } = useFileProcessor(labelFormat, generateFileName);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            PDF Invoice Organizer
+          <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+            PDF Invoice Organiser
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Designed to streamline document management by automatically labelling uploaded PDF invoices in a structured and consistent format. Simply upload a PDF invoice, and the system will return the file with a correctly formatted label for easy organization and retrieval.
+            Designed to streamline document management by automatically labelling uploaded PDF invoices in a structured and consistent format. Simply upload a PDF invoice, and the system will return the file with a correctly formatted label for easy organisation and retrieval.
           </p>
         </div>
 
