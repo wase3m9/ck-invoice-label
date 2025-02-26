@@ -32,7 +32,7 @@ const Login = () => {
             PDF Invoice Label
           </h1>
           <p className="text-gray-600 text-center">
-            Enter access code to continue
+            Labelling uploaded PDF invoices in a structured and consistent format
           </p>
         </div>
 
