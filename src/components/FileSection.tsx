@@ -15,6 +15,7 @@ interface FileSectionProps {
 
 export const FileSection = ({ files, onSave, onDelete }: FileSectionProps) => {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (files.length === 0) return null;
 
@@ -35,7 +36,6 @@ export const FileSection = ({ files, onSave, onDelete }: FileSectionProps) => {
         return;
       }
 
-      // Use fetch directly to get the binary response
       const { data: { url } } = await supabase.functions.invoke('create-zip', {
         body: { files: downloadableFiles }
       });
@@ -44,7 +44,6 @@ export const FileSection = ({ files, onSave, onDelete }: FileSectionProps) => {
       const blob = await response.blob();
 
       try {
-        // Try to use the File System Access API first
         if (window.showSaveFilePicker) {
           const handle = await window.showSaveFilePicker({
             suggestedName: `invoices-${new Date().toISOString().slice(0,10)}.zip`,
@@ -61,7 +60,6 @@ export const FileSection = ({ files, onSave, onDelete }: FileSectionProps) => {
           await writable.close();
           toast.success('Files downloaded successfully');
         } else {
-          // Fallback for browsers that don't support File System Access API
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
@@ -87,21 +85,55 @@ export const FileSection = ({ files, onSave, onDelete }: FileSectionProps) => {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (files.length === 0) {
+      toast.error('No files to delete');
+      return;
+    }
+
+    setIsDeleting(true);
+    const toastId = toast.loading('Deleting all files...');
+
+    try {
+      for (const file of files) {
+        await onDelete(file);
+      }
+      toast.success('All files deleted successfully');
+    } catch (error) {
+      console.error('Error deleting files:', error);
+      toast.error('Failed to delete some files');
+    } finally {
+      setIsDeleting(false);
+      toast.dismiss(toastId);
+    }
+  };
+
   return (
     <div className="glass-card p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900">
           Uploaded Files
         </h2>
-        <Button
-          variant="outline"
-          onClick={handleDownloadAll}
-          disabled={isDownloading || files.length === 0}
-          className="inline-flex items-center"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          {isDownloading ? 'Creating Zip...' : 'Download All'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleDownloadAll}
+            disabled={isDownloading || files.length === 0}
+            className="inline-flex items-center"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            {isDownloading ? 'Creating Zip...' : 'Download All'}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDeleteAll}
+            disabled={isDeleting || files.length === 0}
+            className="inline-flex items-center"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {isDeleting ? 'Deleting...' : 'Delete All'}
+          </Button>
+        </div>
       </div>
       <FileList 
         files={files} 
