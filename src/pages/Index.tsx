@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { FileUpload } from '../components/FileUpload';
 import { FileSection } from '../components/FileSection';
 import { LabelFormatConfig, LabelField } from '../components/LabelFormatConfig';
 import { useFileProcessor } from '../hooks/useFileProcessor';
 import { toast } from 'sonner';
+
 const DEFAULT_FIELDS: LabelField[] = [{
   id: 'location',
   label: 'Location'
@@ -19,18 +21,23 @@ const DEFAULT_FIELDS: LabelField[] = [{
   label: 'Amount',
   prefix: '£'
 }];
+
 const DEFAULT_FORMAT = ['location', 'supplier_name', 'invoice_number', 'gross_invoice_amount'];
+
 const Index = () => {
   const [fields, setFields] = useState<LabelField[]>(DEFAULT_FIELDS);
   const [labelFormat, setLabelFormat] = useState<string[]>(DEFAULT_FORMAT);
+
   const handleFormatChange = (fieldId: string, position: number) => {
     const newFormat = [...labelFormat];
     newFormat[position] = fieldId === "none" ? "" : fieldId;
     setLabelFormat(newFormat);
   };
+
   const handleAddCustomField = (newField: LabelField) => {
     setFields(prev => [...prev, newField]);
   };
+
   const generateFileName = (details: Record<string, string>) => {
     if (!details) return '';
     const parts = labelFormat.filter(fieldId => fieldId && fieldId !== "none").map(fieldId => {
@@ -42,12 +49,14 @@ const Index = () => {
     }).filter(part => part !== '');
     return parts.join(' - ') + '.pdf';
   };
+
   const {
     files,
     handleFilesDrop,
     handleSave,
     handleDelete
   } = useFileProcessor(labelFormat, generateFileName);
+
   const onDelete = async (file: any) => {
     try {
       await handleDelete(file);
@@ -56,11 +65,12 @@ const Index = () => {
       toast.error(`Failed to delete ${file.name}`);
     }
   };
+
   return <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-            PDF Invoice Organiser
+            PDF AutoLabel
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Designed to streamline document management by automatically labelling uploaded PDF invoices in a structured and consistent format. Simply upload a PDF invoice, and the system will return the file with a correctly formatted label for easy organisation and retrieval.
@@ -78,4 +88,5 @@ const Index = () => {
       </div>
     </div>;
 };
+
 export default Index;

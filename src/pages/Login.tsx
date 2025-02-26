@@ -29,7 +29,7 @@ const Login = () => {
             className="h-16 mb-8"
           />
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            PDF Invoice Label
+            PDF AutoLabel
           </h1>
           <p className="text-gray-600 text-center">
             Labelling uploaded PDF invoices in a structured and consistent format
