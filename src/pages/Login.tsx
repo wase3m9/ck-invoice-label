@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, FilePlus } from 'lucide-react';
 
 const Login = () => {
   const [password, setPassword] = useState('');
@@ -53,19 +52,13 @@ const Login = () => {
               value="autolabel" 
               className="h-14 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200"
             >
-              <div className="flex items-center justify-center gap-2">
-                <FileText className="h-5 w-5" style={{ transform: 'translateY(-1px)' }} />
-                <span className="font-medium">PDF AutoLabel</span>
-              </div>
+              <span className="font-medium">PDF AutoLabel</span>
             </TabsTrigger>
             <TabsTrigger 
               value="merge" 
               className="h-14 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200"
             >
-              <div className="flex items-center justify-center gap-2">
-                <FilePlus className="h-5 w-5" style={{ transform: 'translateY(-1px)' }} />
-                <span className="font-medium">Merge PDFs</span>
-              </div>
+              <span className="font-medium">Merge PDFs</span>
             </TabsTrigger>
           </TabsList>
           
