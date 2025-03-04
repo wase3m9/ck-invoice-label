@@ -9,7 +9,8 @@ import {
   ArrowUp, 
   ArrowDown, 
   Trash2, 
-  FileText
+  FileText,
+  FolderOpen
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
@@ -32,11 +33,12 @@ const MergePDF = () => {
     toast.success(`${acceptedFiles.length} files added`);
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: {
       'application/pdf': ['.pdf']
-    }
+    },
+    noClick: true // Disable click on the entire dropzone to open file dialog
   });
 
   const removeFile = (id: string) => {
@@ -127,9 +129,18 @@ const MergePDF = () => {
               <p className="text-lg font-medium text-gray-900">
                 {isDragActive ? 'Drop PDFs here...' : 'Drag & drop PDFs here'}
               </p>
-              <p className="mt-2 text-sm text-gray-500">
-                or click to select files
+              <p className="mt-2 text-sm text-gray-500 mb-4">
+                or select files
               </p>
+              <Button
+                onClick={open}
+                type="button"
+                variant="outline"
+                className="mt-2"
+              >
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Select PDF Files
+              </Button>
             </div>
           </div>
         </div>
