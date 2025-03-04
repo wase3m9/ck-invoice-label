@@ -41,14 +41,31 @@
 }
 
 .file-item {
-  @apply backdrop-blur-md bg-white/30 border rounded-lg p-4 transition-all duration-300 hover:shadow-lg;
+  @apply backdrop-blur-md bg-white/70 border border-gray-100 rounded-lg p-4 transition-all duration-300 hover:shadow-lg;
 }
 
 .glass-card {
-  @apply backdrop-blur-md bg-gradient-to-br from-[#FDE1D3] to-[#E5DEFF] border rounded-lg shadow-sm transition-all duration-300;
+  @apply backdrop-blur-md bg-white/80 border border-gray-100 rounded-lg shadow-sm transition-all duration-300;
 }
 
 body {
-  @apply bg-gradient-to-br from-[#F2FCE2] via-[#FFDEE2] to-[#D3E4FD] min-h-screen;
+  @apply bg-gradient-to-br from-[#F9FAFB] via-[#F3F4F6] to-[#E5E7EB] min-h-screen;
+}
+
+/* Modern Button Styles */
+button {
+  @apply transition-all duration-300;
+}
+
+input {
+  @apply transition-all duration-300;
+}
+
+.modern-shadow {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+}
+
+.modern-card {
+  @apply bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden p-6;
 }
 
