@@ -21,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Index />} />
           <Route path="/merge" element={<MergePDF />} />
+          <Route path="/index" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

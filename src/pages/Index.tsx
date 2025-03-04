@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileUpload } from '../components/FileUpload';
@@ -69,7 +70,8 @@ const Index = () => {
     }
   };
 
-  return <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+  return (
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto relative">
         <div className="absolute left-0 top-0">
           <Button
@@ -101,7 +103,8 @@ const Index = () => {
 
         <FileSection files={files} onSave={handleSave} onDelete={onDelete} />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default Index;
