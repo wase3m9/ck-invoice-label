@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, FilesPlusIcon } from 'lucide-react';
+import { FileText, FilePlus } from 'lucide-react';
 
 const Login = () => {
   const [password, setPassword] = useState('');
@@ -54,7 +53,7 @@ const Login = () => {
               <span>PDF AutoLabel</span>
             </TabsTrigger>
             <TabsTrigger value="merge" className="flex flex-col py-3 gap-2">
-              <FilesPlusIcon className="h-5 w-5" />
+              <FilePlus className="h-5 w-5" />
               <span>Merge PDFs</span>
             </TabsTrigger>
           </TabsList>
