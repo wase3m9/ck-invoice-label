@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, FilePlus } from 'lucide-react';
+
 const Login = () => {
   const [password, setPassword] = useState('');
   const [selectedTab, setSelectedTab] = useState('autolabel');
   const navigate = useNavigate();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedTab === 'autolabel' && password === '1111') {
@@ -23,6 +25,7 @@ const Login = () => {
     toast.error('Incorrect password');
     setPassword('');
   };
+
   return <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center">
@@ -55,9 +58,10 @@ const Login = () => {
               </p>
             </div>
             
-            <form onSubmit={handleSubmit} className="mt-6 space-y-3 flex flex-col items-center">
-              <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[200px]" autoFocus />
-              <Button type="submit" className="w-[200px]">
+            <form onSubmit={handleSubmit} className="mt-4 space-y-2 flex flex-col items-center">
+              <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[180px]" autoFocus />
+              <Button type="submit" className="w-[180px] py-1 h-8">
+                <FileText className="h-4 w-4 mr-1" />
                 Continue
               </Button>
             </form>
@@ -74,9 +78,10 @@ const Login = () => {
               </p>
             </div>
             
-            <form onSubmit={handleSubmit} className="mt-6 space-y-3 flex flex-col items-center">
-              <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[200px]" autoFocus />
-              <Button type="submit" className="w-[200px]">
+            <form onSubmit={handleSubmit} className="mt-4 space-y-2 flex flex-col items-center">
+              <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[180px]" autoFocus />
+              <Button type="submit" className="w-[180px] py-1 h-8">
+                <FilePlus className="h-4 w-4 mr-1" />
                 Continue
               </Button>
             </form>
