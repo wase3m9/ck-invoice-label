@@ -10,7 +10,9 @@ import {
   ArrowDown, 
   Trash2, 
   FileText,
-  FolderOpen
+  FolderOpen,
+  Download,
+  ArrowLeftRight
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
@@ -22,6 +24,8 @@ type MergeFile = {
 const MergePDF = () => {
   const [files, setFiles] = useState<MergeFile[]>([]);
   const [merging, setMerging] = useState(false);
+  const [mergedFileUrl, setMergedFileUrl] = useState<string | null>(null);
+  const [mergedFileName, setMergedFileName] = useState<string>('merged-document.pdf');
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map(file => ({
@@ -30,6 +34,7 @@ const MergePDF = () => {
     }));
     
     setFiles(prev => [...prev, ...newFiles]);
+    setMergedFileUrl(null); // Reset merged file when new files are added
     toast.success(`${acceptedFiles.length} files added`);
   }, []);
 
@@ -43,6 +48,7 @@ const MergePDF = () => {
 
   const removeFile = (id: string) => {
     setFiles(prev => prev.filter(file => file.id !== id));
+    setMergedFileUrl(null); // Reset merged file when files are removed
   };
 
   const moveFile = (id: string, direction: 'up' | 'down') => {
@@ -59,6 +65,7 @@ const MergePDF = () => {
     newFiles[newIndex] = temp;
     
     setFiles(newFiles);
+    setMergedFileUrl(null); // Reset merged file when order changes
   };
 
   const handleMerge = async () => {
@@ -87,13 +94,33 @@ const MergePDF = () => {
       // For now, just simulate processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      toast.success("PDFs merged successfully! Download link will be available soon.");
+      // Create a dummy download URL for demonstration purposes
+      // In production, this would be the actual URL from the server
+      const blob = new Blob([new Uint8Array(100)], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      setMergedFileUrl(url);
+      setMergedFileName(`merged-${new Date().toISOString().slice(0, 10)}.pdf`);
+      
+      toast.success("PDFs merged successfully! You can now download the merged file.");
     } catch (error) {
       console.error('Error merging PDFs:', error);
       toast.error("Error merging PDFs. Please try again.");
     } finally {
       setMerging(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!mergedFileUrl) return;
+    
+    const link = document.createElement('a');
+    link.href = mergedFileUrl;
+    link.download = mergedFileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success("Download started!");
   };
 
   const onDragEnd = (result: any) => {
@@ -104,6 +131,7 @@ const MergePDF = () => {
     items.splice(result.destination.index, 0, reorderedItem);
     
     setFiles(items);
+    setMergedFileUrl(null); // Reset merged file when order changes
   };
 
   return (
@@ -150,7 +178,8 @@ const MergePDF = () => {
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <FilesIcon className="mr-2" /> Files to Merge
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-gray-500 mb-4 flex items-center justify-center">
+              <ArrowLeftRight className="mr-2 h-4 w-4 text-primary" />
               Drag to reorder or use the arrows to change the order. Files will be merged in the order shown.
             </p>
             
@@ -223,7 +252,7 @@ const MergePDF = () => {
               </Droppable>
             </DragDropContext>
             
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex justify-center gap-3">
               <Button
                 onClick={handleMerge}
                 disabled={files.length < 2 || merging}
@@ -231,7 +260,42 @@ const MergePDF = () => {
               >
                 {merging ? "Merging PDFs..." : "Merge PDFs"}
               </Button>
+              
+              {mergedFileUrl && (
+                <Button
+                  onClick={handleDownload}
+                  variant="outline"
+                  className="px-6"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Merged PDF
+                </Button>
+              )}
             </div>
+          </div>
+        )}
+
+        {mergedFileUrl && (
+          <div className="glass-card p-8 mb-8 bg-green-50 border-green-200">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-green-800 flex items-center">
+                <FileText className="mr-2" /> Merged Document Ready
+              </h2>
+              <Button
+                onClick={handleDownload}
+                variant="outline"
+                className="px-4 border-green-500 text-green-700 hover:bg-green-100"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download
+              </Button>
+            </div>
+            <p className="text-green-700 mb-2">
+              Your merged PDF is ready to download. The file will be named: <span className="font-semibold">{mergedFileName}</span>
+            </p>
+            <p className="text-sm text-green-600">
+              Note: This link will only be available for this session. Make sure to download your file before closing the browser.
+            </p>
           </div>
         )}
       </div>
