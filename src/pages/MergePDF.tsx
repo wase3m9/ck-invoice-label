@@ -15,6 +15,7 @@ import {
   ArrowLeftRight
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { PDFDocument } from 'pdf-lib';
 
 type MergeFile = {
   id: string;
@@ -28,14 +29,26 @@ const MergePDF = () => {
   const [mergedFileName, setMergedFileName] = useState<string>('merged-document.pdf');
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map(file => ({
+    // Filter out non-PDF files
+    const pdfFiles = acceptedFiles.filter(file => 
+      file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+    );
+    
+    if (pdfFiles.length < acceptedFiles.length) {
+      toast.warning(`${acceptedFiles.length - pdfFiles.length} non-PDF files were ignored`);
+    }
+    
+    const newFiles = pdfFiles.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       file
     }));
     
     setFiles(prev => [...prev, ...newFiles]);
     setMergedFileUrl(null);
-    toast.success(`${acceptedFiles.length} files added`);
+    
+    if (pdfFiles.length > 0) {
+      toast.success(`${pdfFiles.length} PDF file${pdfFiles.length === 1 ? '' : 's'} added`);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
@@ -68,6 +81,36 @@ const MergePDF = () => {
     setMergedFileUrl(null);
   };
 
+  const combinePdfs = async (pdfFiles: File[]): Promise<Uint8Array> => {
+    try {
+      // Create a new PDF document
+      const mergedPdf = await PDFDocument.create();
+      
+      // Loop through each PDF file
+      for (const file of pdfFiles) {
+        // Convert File to ArrayBuffer
+        const arrayBuffer = await file.arrayBuffer();
+        
+        // Load the PDF document
+        const pdfDoc = await PDFDocument.load(arrayBuffer);
+        
+        // Get all pages from the PDF
+        const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+        
+        // Add each page to the new PDF document
+        pages.forEach(page => mergedPdf.addPage(page));
+      }
+      
+      // Save the merged PDF as bytes
+      const mergedPdfBytes = await mergedPdf.save();
+      
+      return mergedPdfBytes;
+    } catch (error) {
+      console.error('Error merging PDFs:', error);
+      throw new Error('Failed to merge PDF files');
+    }
+  };
+
   const handleMerge = async () => {
     if (files.length < 2) {
       toast.error("Please add at least 2 PDF files to merge");
@@ -76,15 +119,25 @@ const MergePDF = () => {
 
     setMerging(true);
     try {
-      // In a real implementation, this would call a backend API
-      // For now, we concatenate the files client-side
+      // Merge the PDF files
       const combinedPdfBytes = await combinePdfs(files.map(f => f.file));
+      
+      // Create a Blob from the merged PDF bytes
       const blob = new Blob([combinedPdfBytes], { type: 'application/pdf' });
+      
+      // Create a URL for the blob
       const url = URL.createObjectURL(blob);
       
+      // Set the merged file URL and name
       setMergedFileUrl(url);
       setMergedFileName(`merged-${new Date().toISOString().slice(0, 10)}.pdf`);
+      
       toast.success("PDFs merged successfully!");
+      
+      // Automatically trigger download
+      setTimeout(() => {
+        downloadMergedFile(url, mergedFileName);
+      }, 500);
     } catch (error) {
       console.error('Error merging PDFs:', error);
       toast.error("Error merging PDFs. Please try again.");
@@ -93,22 +146,15 @@ const MergePDF = () => {
     }
   };
 
-  const combinePdfs = async (pdfFiles: File[]): Promise<Uint8Array> => {
-    // This is a simplified version of PDF merging for demonstration
-    // In a real implementation, you would use a PDF library or call a backend service
-    const totalSize = pdfFiles.reduce((sum, file) => sum + file.size, 0);
-    const result = new Uint8Array(totalSize);
-    
-    let offset = 0;
-    for (const file of pdfFiles) {
-      const buffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(buffer);
-      
-      result.set(bytes, offset);
-      offset += bytes.length;
-    }
-    
-    return result;
+  const downloadMergedFile = (url: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+    }, 100);
   };
 
   const handleDownload = () => {
@@ -118,17 +164,7 @@ const MergePDF = () => {
     }
     
     try {
-      const link = document.createElement('a');
-      link.href = mergedFileUrl;
-      link.download = mergedFileName;
-      document.body.appendChild(link);
-      link.click();
-      
-      setTimeout(() => {
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(mergedFileUrl);
-      }, 100);
-      
+      downloadMergedFile(mergedFileUrl, mergedFileName);
       toast.success("Download started!");
     } catch (error) {
       console.error('Download error:', error);
