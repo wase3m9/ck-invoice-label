@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,7 @@ const MergePDF = () => {
     }));
     
     setFiles(prev => [...prev, ...newFiles]);
-    setMergedFileUrl(null); // Reset merged file when new files are added
+    setMergedFileUrl(null);
     toast.success(`${acceptedFiles.length} files added`);
   }, []);
 
@@ -43,12 +42,12 @@ const MergePDF = () => {
     accept: {
       'application/pdf': ['.pdf']
     },
-    noClick: true // Disable click on the entire dropzone to open file dialog
+    noClick: true
   });
 
   const removeFile = (id: string) => {
     setFiles(prev => prev.filter(file => file.id !== id));
-    setMergedFileUrl(null); // Reset merged file when files are removed
+    setMergedFileUrl(null);
   };
 
   const moveFile = (id: string, direction: 'up' | 'down') => {
@@ -65,7 +64,7 @@ const MergePDF = () => {
     newFiles[newIndex] = temp;
     
     setFiles(newFiles);
-    setMergedFileUrl(null); // Reset merged file when order changes
+    setMergedFileUrl(null);
   };
 
   const handleMerge = async () => {
@@ -81,23 +80,10 @@ const MergePDF = () => {
         formData.append(`file${index}`, file.file);
       });
 
-      // Example of how we could call a backend API
-      // const response = await fetch('https://yjhamwwwryfswimjjzgt.supabase.co/functions/v1/merge-pdfs', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqaGFtd3d3cnlmc3dpbWpqemd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1MDMxNTYsImV4cCI6MjA1NjA3OTE1Nn0.bjbj1u32328r2NepQxBlhQeo_D3VXJpRR5VDzCR09DQ`,
-      //   },
-      //   body: formData,
-      // });
-      
-      // TODO: Integrate with actual merging functionality later
-      // For now, just simulate processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Create a dummy download URL for demonstration purposes
-      // In production, this would be the actual URL from the server
-      const blob = new Blob([new Uint8Array(100)], { type: 'application/pdf' });
+      const combinedPdfBytes = await combinePdfs(files.map(f => f.file));
+      const blob = new Blob([combinedPdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
+      
       setMergedFileUrl(url);
       setMergedFileName(`merged-${new Date().toISOString().slice(0, 10)}.pdf`);
       
@@ -110,17 +96,45 @@ const MergePDF = () => {
     }
   };
 
+  const combinePdfs = async (pdfFiles: File[]): Promise<Uint8Array> => {
+    const totalSize = pdfFiles.reduce((sum, file) => sum + file.size, 0);
+    const result = new Uint8Array(totalSize);
+    
+    let offset = 0;
+    for (const file of pdfFiles) {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      
+      result.set(bytes, offset);
+      offset += bytes.length;
+    }
+    
+    return result;
+  };
+
   const handleDownload = () => {
-    if (!mergedFileUrl) return;
+    if (!mergedFileUrl) {
+      toast.error("No merged file available to download");
+      return;
+    }
     
-    const link = document.createElement('a');
-    link.href = mergedFileUrl;
-    link.download = mergedFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success("Download started!");
+    try {
+      const link = document.createElement('a');
+      link.href = mergedFileUrl;
+      link.download = mergedFileName;
+      document.body.appendChild(link);
+      link.click();
+      
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(mergedFileUrl);
+      }, 100);
+      
+      toast.success("Download started!");
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error("Error downloading file. Please try again.");
+    }
   };
 
   const onDragEnd = (result: any) => {
@@ -131,7 +145,7 @@ const MergePDF = () => {
     items.splice(result.destination.index, 0, reorderedItem);
     
     setFiles(items);
-    setMergedFileUrl(null); // Reset merged file when order changes
+    setMergedFileUrl(null);
   };
 
   return (
