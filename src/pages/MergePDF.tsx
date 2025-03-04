@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,8 @@ import {
   FolderOpen,
   Download,
   ArrowLeftRight,
-  Home
+  Home,
+  FileUp
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { PDFDocument } from 'pdf-lib';
@@ -162,7 +164,8 @@ const MergePDF = () => {
         </div>
         
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight flex items-center justify-center gap-3">
+            <FileUp className="h-8 w-8" />
             Merge PDF Files
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">

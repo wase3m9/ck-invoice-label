@@ -6,7 +6,7 @@ import { FileSection } from '../components/FileSection';
 import { LabelFormatConfig, LabelField } from '../components/LabelFormatConfig';
 import { useFileProcessor } from '../hooks/useFileProcessor';
 import { toast } from 'sonner';
-import { Home } from 'lucide-react';
+import { Home, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const DEFAULT_FIELDS: LabelField[] = [{
@@ -86,7 +86,8 @@ const Index = () => {
         </div>
         
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight flex items-center justify-center gap-3">
+            <FileText className="h-8 w-8" />
             PDF AutoLabel
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
