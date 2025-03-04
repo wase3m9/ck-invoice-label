@@ -52,14 +52,14 @@ body {
   @apply bg-gradient-to-br from-[#F2FCE2] via-[#FFDEE2] to-[#D3E4FD] min-h-screen;
 }
 
-/* Tab button styling with improved spacing */
+/* Tab button styling to ensure vertical alignment */
 [role="tab"] {
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: visible;
   line-height: 1.2;
-  padding: 10px 12px; /* Increased vertical padding */
+  padding: 8px 12px;
 }
 
 [role="tab"] > div {
@@ -68,17 +68,10 @@ body {
   justify-content: center;
   height: 100%;
   width: 100%;
-  padding: 2px 0; /* Added padding within the container */
 }
 
 [role="tab"] span {
   display: inline-block;
   position: relative;
-  padding-bottom: 4px; /* Increased padding for descenders */
-  padding-top: 2px; /* Added padding at the top */
-}
-
-/* Ensure icons have enough space */
-[role="tab"] svg {
-  margin-bottom: 2px; /* Add space below icons */
+  padding-bottom: 2px; /* Give a little space for descenders */
 }
