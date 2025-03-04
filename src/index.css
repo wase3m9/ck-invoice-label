@@ -52,3 +52,15 @@ body {
   @apply bg-gradient-to-br from-[#F2FCE2] via-[#FFDEE2] to-[#D3E4FD] min-h-screen;
 }
 
+/* Tab button styling to ensure vertical alignment */
+[role="tab"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[role="tab"] > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
