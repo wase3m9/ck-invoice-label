@@ -1,10 +1,12 @@
-
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FileUpload } from '../components/FileUpload';
 import { FileSection } from '../components/FileSection';
 import { LabelFormatConfig, LabelField } from '../components/LabelFormatConfig';
 import { useFileProcessor } from '../hooks/useFileProcessor';
 import { toast } from 'sonner';
+import { Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const DEFAULT_FIELDS: LabelField[] = [{
   id: 'location',
@@ -27,6 +29,7 @@ const DEFAULT_FORMAT = ['location', 'supplier_name', 'invoice_number', 'gross_in
 const Index = () => {
   const [fields, setFields] = useState<LabelField[]>(DEFAULT_FIELDS);
   const [labelFormat, setLabelFormat] = useState<string[]>(DEFAULT_FORMAT);
+  const navigate = useNavigate();
 
   const handleFormatChange = (fieldId: string, position: number) => {
     const newFormat = [...labelFormat];
@@ -67,7 +70,19 @@ const Index = () => {
   };
 
   return <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto relative">
+        <div className="absolute left-0 top-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="h-10 w-10 rounded-full"
+            aria-label="Go to home page"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+        </div>
+        
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
             PDF AutoLabel

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -12,10 +11,12 @@ import {
   FileText,
   FolderOpen,
   Download,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Home
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { PDFDocument } from 'pdf-lib';
+import { useNavigate } from 'react-router-dom';
 
 type MergeFile = {
   id: string;
@@ -25,9 +26,9 @@ type MergeFile = {
 const MergePDF = () => {
   const [files, setFiles] = useState<MergeFile[]>([]);
   const [merging, setMerging] = useState(false);
+  const navigate = useNavigate();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Filter out non-PDF files
     const pdfFiles = acceptedFiles.filter(file => 
       file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
     );
@@ -78,25 +79,15 @@ const MergePDF = () => {
 
   const combinePdfs = async (pdfFiles: File[]): Promise<Uint8Array> => {
     try {
-      // Create a new PDF document
       const mergedPdf = await PDFDocument.create();
       
-      // Loop through each PDF file
       for (const file of pdfFiles) {
-        // Convert File to ArrayBuffer
         const arrayBuffer = await file.arrayBuffer();
-        
-        // Load the PDF document
         const pdfDoc = await PDFDocument.load(arrayBuffer);
-        
-        // Get all pages from the PDF
         const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-        
-        // Add each page to the new PDF document
         pages.forEach(page => mergedPdf.addPage(page));
       }
       
-      // Save the merged PDF as bytes
       const mergedPdfBytes = await mergedPdf.save();
       
       return mergedPdfBytes;
@@ -114,7 +105,6 @@ const MergePDF = () => {
     document.body.appendChild(link);
     link.click();
     
-    // Clean up
     setTimeout(() => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
@@ -129,18 +119,14 @@ const MergePDF = () => {
 
     setMerging(true);
     try {
-      // Merge the PDF files
       const combinedPdfBytes = await combinePdfs(files.map(f => f.file));
       
-      // Create a Blob from the merged PDF bytes
       const blob = new Blob([combinedPdfBytes], { type: 'application/pdf' });
       
-      // Generate filename
       const mergedFileName = `merged-${new Date().toISOString().slice(0, 10)}.pdf`;
       
       toast.success("PDFs merged successfully!");
       
-      // Automatically trigger download
       downloadMergedFile(blob, mergedFileName);
     } catch (error) {
       console.error('Error merging PDFs:', error);
@@ -162,7 +148,19 @@ const MergePDF = () => {
 
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto relative">
+        <div className="absolute left-0 top-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="h-10 w-10 rounded-full"
+            aria-label="Go to home page"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+        </div>
+        
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
             Merge PDF Files
