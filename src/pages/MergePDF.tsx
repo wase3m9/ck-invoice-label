@@ -159,7 +159,7 @@ const MergePDF = () => {
             className="h-10 w-10 rounded-full"
             aria-label="Go to home page"
           >
-            <Home className="h-6 w-6" />
+            <Home className="h-18 w-18" />
           </Button>
         </div>
         
