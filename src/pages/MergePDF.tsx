@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -75,19 +76,15 @@ const MergePDF = () => {
 
     setMerging(true);
     try {
-      const formData = new FormData();
-      files.forEach((file, index) => {
-        formData.append(`file${index}`, file.file);
-      });
-
+      // In a real implementation, this would call a backend API
+      // For now, we concatenate the files client-side
       const combinedPdfBytes = await combinePdfs(files.map(f => f.file));
       const blob = new Blob([combinedPdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
       setMergedFileUrl(url);
       setMergedFileName(`merged-${new Date().toISOString().slice(0, 10)}.pdf`);
-      
-      toast.success("PDFs merged successfully! You can now download the merged file.");
+      toast.success("PDFs merged successfully!");
     } catch (error) {
       console.error('Error merging PDFs:', error);
       toast.error("Error merging PDFs. Please try again.");
@@ -97,6 +94,8 @@ const MergePDF = () => {
   };
 
   const combinePdfs = async (pdfFiles: File[]): Promise<Uint8Array> => {
+    // This is a simplified version of PDF merging for demonstration
+    // In a real implementation, you would use a PDF library or call a backend service
     const totalSize = pdfFiles.reduce((sum, file) => sum + file.size, 0);
     const result = new Uint8Array(totalSize);
     
@@ -114,7 +113,7 @@ const MergePDF = () => {
 
   const handleDownload = () => {
     if (!mergedFileUrl) {
-      toast.error("No merged file available to download");
+      toast.error("Please merge PDFs first before downloading");
       return;
     }
     
@@ -188,7 +187,7 @@ const MergePDF = () => {
         </div>
 
         {files.length > 0 && (
-          <div className="glass-card p-8 mb-8">
+          <div className="glass-card p-8 mb-8 bg-[#fff5f5]">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
               <FilesIcon className="mr-2" /> Files to Merge
             </h2>
@@ -212,12 +211,12 @@ const MergePDF = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className="file-item flex items-center justify-between gap-4"
+                            className="file-item flex items-center bg-[#f9f9f9] p-4 rounded-md"
                           >
+                            <div className="bg-gray-200 text-gray-700 font-medium rounded-full w-8 h-8 flex items-center justify-center mr-4">
+                              {index + 1}
+                            </div>
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                              <div className="bg-primary/10 text-primary font-medium rounded-md w-8 h-8 flex items-center justify-center">
-                                {index + 1}
-                              </div>
                               <FileText className="h-8 w-8 text-foreground flex-shrink-0" />
                               <div className="min-w-0 flex-1">
                                 <p className="font-medium text-gray-900 truncate">
@@ -235,6 +234,7 @@ const MergePDF = () => {
                                 onClick={() => moveFile(file.id, 'up')}
                                 disabled={index === 0}
                                 className="h-8 w-8"
+                                aria-label="Move up"
                               >
                                 <ArrowUp className="h-4 w-4" />
                               </Button>
@@ -244,6 +244,7 @@ const MergePDF = () => {
                                 onClick={() => moveFile(file.id, 'down')}
                                 disabled={index === files.length - 1}
                                 className="h-8 w-8"
+                                aria-label="Move down"
                               >
                                 <ArrowDown className="h-4 w-4" />
                               </Button>
@@ -252,6 +253,7 @@ const MergePDF = () => {
                                 size="icon"
                                 onClick={() => removeFile(file.id)}
                                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                aria-label="Remove file"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -270,46 +272,21 @@ const MergePDF = () => {
               <Button
                 onClick={handleMerge}
                 disabled={files.length < 2 || merging}
-                className="px-6"
+                className="px-6 bg-gray-700 hover:bg-gray-800"
               >
                 {merging ? "Merging PDFs..." : "Merge PDFs"}
               </Button>
               
-              {mergedFileUrl && (
-                <Button
-                  onClick={handleDownload}
-                  variant="outline"
-                  className="px-6"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Merged PDF
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {mergedFileUrl && (
-          <div className="glass-card p-8 mb-8 bg-green-50 border-green-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-green-800 flex items-center">
-                <FileText className="mr-2" /> Merged Document Ready
-              </h2>
               <Button
                 onClick={handleDownload}
                 variant="outline"
-                className="px-4 border-green-500 text-green-700 hover:bg-green-100"
+                disabled={!mergedFileUrl}
+                className="px-6 border-gray-400"
               >
                 <Download className="mr-2 h-4 w-4" />
-                Download
+                Download Merged PDF
               </Button>
             </div>
-            <p className="text-green-700 mb-2">
-              Your merged PDF is ready to download. The file will be named: <span className="font-semibold">{mergedFileName}</span>
-            </p>
-            <p className="text-sm text-green-600">
-              Note: This link will only be available for this session. Make sure to download your file before closing the browser.
-            </p>
           </div>
         )}
       </div>
