@@ -4,19 +4,29 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { FileText, FilesPlusIcon } from 'lucide-react';
 
 const Login = () => {
   const [password, setPassword] = useState('');
+  const [selectedTab, setSelectedTab] = useState('autolabel');
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === '1111') {
+    
+    if (selectedTab === 'autolabel' && password === '1111') {
       navigate('/dashboard');
-    } else {
-      toast.error('Incorrect password');
-      setPassword('');
+      return;
+    } 
+    
+    if (selectedTab === 'merge' && password === '2222') {
+      navigate('/merge');
+      return;
     }
+    
+    toast.error('Incorrect password');
+    setPassword('');
   };
 
   return (
@@ -28,27 +38,77 @@ const Login = () => {
             alt="CloudKeepers Logo"
             className="h-16 mb-8"
           />
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            PDF AutoLabel
-          </h1>
-          <p className="text-gray-600 text-center">
-            Labelling uploaded PDF invoices in a structured and consistent format
-          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-3 flex flex-col items-center">
-          <Input
-            type="password"
-            placeholder="Enter access code"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="text-center w-[160px]"
-            autoFocus
-          />
-          <Button type="submit" className="w-[160px]">
-            Continue
-          </Button>
-        </form>
+        <Tabs 
+          defaultValue="autolabel" 
+          className="w-full" 
+          onValueChange={(value) => {
+            setSelectedTab(value);
+            setPassword('');
+          }}
+        >
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="autolabel" className="flex flex-col py-3 gap-2">
+              <FileText className="h-5 w-5" />
+              <span>PDF AutoLabel</span>
+            </TabsTrigger>
+            <TabsTrigger value="merge" className="flex flex-col py-3 gap-2">
+              <FilesPlusIcon className="h-5 w-5" />
+              <span>Merge PDFs</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="autolabel" className="mt-6 space-y-4">
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                PDF AutoLabel
+              </h1>
+              <p className="text-gray-600 text-center">
+                Labelling uploaded PDF invoices in a structured and consistent format
+              </p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="mt-6 space-y-3 flex flex-col items-center">
+              <Input
+                type="password"
+                placeholder="Enter access code"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="text-center w-[160px]"
+                autoFocus
+              />
+              <Button type="submit" className="w-[160px]">
+                Continue
+              </Button>
+            </form>
+          </TabsContent>
+          
+          <TabsContent value="merge" className="mt-6 space-y-4">
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Merge PDF Files
+              </h1>
+              <p className="text-gray-600 text-center">
+                Combine PDFs in the order you want with the easiest PDF merger available
+              </p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="mt-6 space-y-3 flex flex-col items-center">
+              <Input
+                type="password"
+                placeholder="Enter access code"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="text-center w-[160px]"
+                autoFocus
+              />
+              <Button type="submit" className="w-[160px]">
+                Continue
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
