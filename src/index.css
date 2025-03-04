@@ -57,10 +57,21 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
+  line-height: 1.2;
+  padding: 8px 12px;
 }
 
 [role="tab"] > div {
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+[role="tab"] span {
+  display: inline-block;
+  position: relative;
+  padding-bottom: 2px; /* Give a little space for descenders */
 }
