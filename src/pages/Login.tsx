@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
@@ -47,20 +48,26 @@ const Login = () => {
             setPassword('');
           }}
         >
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="autolabel" className="flex flex-col py-3 gap-2">
+          <TabsList className="grid grid-cols-2 w-full mb-6 overflow-hidden rounded-xl border">
+            <TabsTrigger 
+              value="autolabel" 
+              className="flex items-center justify-center gap-2 py-4 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200"
+            >
               <FileText className="h-5 w-5" />
-              <span>PDF AutoLabel</span>
+              <span className="font-medium">PDF AutoLabel</span>
             </TabsTrigger>
-            <TabsTrigger value="merge" className="flex flex-col py-3 gap-2">
+            <TabsTrigger 
+              value="merge" 
+              className="flex items-center justify-center gap-2 py-4 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200"
+            >
               <FilePlus className="h-5 w-5" />
-              <span>Merge PDFs</span>
+              <span className="font-medium">Merge PDFs</span>
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="autolabel" className="mt-6 space-y-4">
+          <TabsContent value="autolabel" className="mt-2 space-y-4">
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 PDF AutoLabel
               </h1>
               <p className="text-gray-600 text-center">
@@ -74,18 +81,18 @@ const Login = () => {
                 placeholder="Enter access code"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="text-center w-[160px]"
+                className="text-center w-[200px]"
                 autoFocus
               />
-              <Button type="submit" className="w-[160px]">
+              <Button type="submit" className="w-[200px]">
                 Continue
               </Button>
             </form>
           </TabsContent>
           
-          <TabsContent value="merge" className="mt-6 space-y-4">
+          <TabsContent value="merge" className="mt-2 space-y-4">
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Merge PDF Files
               </h1>
               <p className="text-gray-600 text-center">
@@ -99,10 +106,10 @@ const Login = () => {
                 placeholder="Enter access code"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="text-center w-[160px]"
+                className="text-center w-[200px]"
                 autoFocus
               />
-              <Button type="submit" className="w-[160px]">
+              <Button type="submit" className="w-[200px]">
                 Continue
               </Button>
             </form>
