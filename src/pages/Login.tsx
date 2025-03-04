@@ -71,7 +71,8 @@ const Login = () => {
           
           <TabsContent value="autolabel" className="mt-2 space-y-4">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                <FileText className="h-6 w-6" />
                 PDF AutoLabel
               </h1>
               <p className="text-gray-600 text-center">
@@ -96,7 +97,8 @@ const Login = () => {
           
           <TabsContent value="merge" className="mt-2 space-y-4">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                <FilePlus className="h-6 w-6" />
                 Merge PDF Files
               </h1>
               <p className="text-gray-600 text-center">
