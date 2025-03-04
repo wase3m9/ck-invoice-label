@@ -61,7 +61,6 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="mt-4 space-y-2 flex flex-col items-center">
               <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[180px]" autoFocus />
               <Button type="submit" className="w-[180px] py-1 h-8">
-                <FileText className="h-4 w-4 mr-1" />
                 Continue
               </Button>
             </form>
@@ -81,7 +80,6 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="mt-4 space-y-2 flex flex-col items-center">
               <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[180px]" autoFocus />
               <Button type="submit" className="w-[180px] py-1 h-8">
-                <FilePlus className="h-4 w-4 mr-1" />
                 Continue
               </Button>
             </form>
