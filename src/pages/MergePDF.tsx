@@ -25,8 +25,6 @@ type MergeFile = {
 const MergePDF = () => {
   const [files, setFiles] = useState<MergeFile[]>([]);
   const [merging, setMerging] = useState(false);
-  const [mergedFileUrl, setMergedFileUrl] = useState<string | null>(null);
-  const [mergedFileName, setMergedFileName] = useState<string>('merged-document.pdf');
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     // Filter out non-PDF files
@@ -44,7 +42,6 @@ const MergePDF = () => {
     }));
     
     setFiles(prev => [...prev, ...newFiles]);
-    setMergedFileUrl(null);
     
     if (pdfFiles.length > 0) {
       toast.success(`${pdfFiles.length} PDF file${pdfFiles.length === 1 ? '' : 's'} added`);
@@ -61,7 +58,6 @@ const MergePDF = () => {
 
   const removeFile = (id: string) => {
     setFiles(prev => prev.filter(file => file.id !== id));
-    setMergedFileUrl(null);
   };
 
   const moveFile = (id: string, direction: 'up' | 'down') => {
@@ -78,7 +74,6 @@ const MergePDF = () => {
     newFiles[newIndex] = temp;
     
     setFiles(newFiles);
-    setMergedFileUrl(null);
   };
 
   const combinePdfs = async (pdfFiles: File[]): Promise<Uint8Array> => {
@@ -111,6 +106,21 @@ const MergePDF = () => {
     }
   };
 
+  const downloadMergedFile = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 100);
+  };
+
   const handleMerge = async () => {
     if (files.length < 2) {
       toast.error("Please add at least 2 PDF files to merge");
@@ -125,50 +135,18 @@ const MergePDF = () => {
       // Create a Blob from the merged PDF bytes
       const blob = new Blob([combinedPdfBytes], { type: 'application/pdf' });
       
-      // Create a URL for the blob
-      const url = URL.createObjectURL(blob);
-      
-      // Set the merged file URL and name
-      setMergedFileUrl(url);
-      setMergedFileName(`merged-${new Date().toISOString().slice(0, 10)}.pdf`);
+      // Generate filename
+      const mergedFileName = `merged-${new Date().toISOString().slice(0, 10)}.pdf`;
       
       toast.success("PDFs merged successfully!");
       
       // Automatically trigger download
-      setTimeout(() => {
-        downloadMergedFile(url, mergedFileName);
-      }, 500);
+      downloadMergedFile(blob, mergedFileName);
     } catch (error) {
       console.error('Error merging PDFs:', error);
       toast.error("Error merging PDFs. Please try again.");
     } finally {
       setMerging(false);
-    }
-  };
-
-  const downloadMergedFile = (url: string, filename: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(() => {
-      document.body.removeChild(link);
-    }, 100);
-  };
-
-  const handleDownload = () => {
-    if (!mergedFileUrl) {
-      toast.error("Please merge PDFs first before downloading");
-      return;
-    }
-    
-    try {
-      downloadMergedFile(mergedFileUrl, mergedFileName);
-      toast.success("Download started!");
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error("Error downloading file. Please try again.");
     }
   };
 
@@ -180,7 +158,6 @@ const MergePDF = () => {
     items.splice(result.destination.index, 0, reorderedItem);
     
     setFiles(items);
-    setMergedFileUrl(null);
   };
 
   return (
@@ -304,23 +281,14 @@ const MergePDF = () => {
               </Droppable>
             </DragDropContext>
             
-            <div className="mt-6 flex justify-center gap-3">
+            <div className="mt-6 flex justify-center">
               <Button
                 onClick={handleMerge}
                 disabled={files.length < 2 || merging}
                 className="px-6 bg-gray-700 hover:bg-gray-800"
               >
-                {merging ? "Merging PDFs..." : "Merge PDFs"}
-              </Button>
-              
-              <Button
-                onClick={handleDownload}
-                variant="outline"
-                disabled={!mergedFileUrl}
-                className="px-6 border-gray-400"
-              >
                 <Download className="mr-2 h-4 w-4" />
-                Download Merged PDF
+                {merging ? "Merging PDFs..." : "Merge PDFs"}
               </Button>
             </div>
           </div>
