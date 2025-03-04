@@ -51,19 +51,19 @@ const Login = () => {
           <TabsList className="grid grid-cols-2 w-full mb-6 overflow-hidden rounded-xl border">
             <TabsTrigger 
               value="autolabel" 
-              className="h-14 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200"
+              className="h-16 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200"
             >
               <div className="flex items-center justify-center gap-2">
-                <FileText className="h-5 w-5" style={{ transform: 'translateY(-1px)' }} />
+                <FileText className="h-5 w-5" style={{ transform: 'translateY(-2px)' }} />
                 <span className="font-medium">PDF AutoLabel</span>
               </div>
             </TabsTrigger>
             <TabsTrigger 
               value="merge" 
-              className="h-14 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200"
+              className="h-16 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200"
             >
               <div className="flex items-center justify-center gap-2">
-                <FilePlus className="h-5 w-5" style={{ transform: 'translateY(-1px)' }} />
+                <FilePlus className="h-5 w-5" style={{ transform: 'translateY(-2px)' }} />
                 <span className="font-medium">Merge PDFs</span>
               </div>
             </TabsTrigger>
