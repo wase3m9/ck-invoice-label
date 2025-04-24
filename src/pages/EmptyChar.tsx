@@ -1,7 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Home, Characters } from 'lucide-react';
+import { Home, FileBadge } from 'lucide-react';
 import EmptyCharacterTool from '@/components/EmptyCharacter';
 
 const EmptyChar = () => {
@@ -24,7 +24,7 @@ const EmptyChar = () => {
         
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight flex items-center justify-center gap-3">
-            <Characters className="h-8 w-8" />
+            <FileBadge className="h-8 w-8" />
             Empty Character Tool
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
