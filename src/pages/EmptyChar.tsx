@@ -2,7 +2,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Home, FileBadge } from 'lucide-react';
-import EmptyCharacterTool from '@/components/EmptyCharacter';
 
 const EmptyChar = () => {
   const navigate = useNavigate();
@@ -28,11 +27,28 @@ const EmptyChar = () => {
             Empty Character Tool
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Need an invisible character? This tool provides a zero-width space character that can be used where regular spaces aren't accepted. Perfect for forms, messages, or any other situation where you need an empty but valid input.
+            Need an invisible character? Copy a zero-width space character that can be used where regular spaces aren't accepted.
           </p>
         </div>
 
-        <EmptyCharacterTool />
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
+          <h2 className="text-2xl font-semibold mb-4">Empty Character Tool</h2>
+          <p className="text-muted-foreground mb-6">
+            Click the button below to copy an invisible empty character to your clipboard.
+            This character can be used where regular spaces are not accepted.
+          </p>
+          <Button 
+            onClick={() => {
+              const emptyChar = '\u200B';
+              navigator.clipboard.writeText(emptyChar).then(() => {
+                alert('Empty character copied to clipboard');
+              });
+            }}
+            className="flex items-center gap-2"
+          >
+            Copy to clipboard
+          </Button>
+        </div>
       </div>
     </div>
   );
