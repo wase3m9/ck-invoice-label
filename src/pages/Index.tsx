@@ -7,7 +7,6 @@ import { useFileProcessor } from '../hooks/useFileProcessor';
 import { toast } from 'sonner';
 import { Home, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import EmptyCharacter from '../components/EmptyCharacter';
 
 const DEFAULT_FIELDS: LabelField[] = [{
   id: 'location',
@@ -103,10 +102,6 @@ const Index = () => {
         </div>
 
         <FileSection files={files} onSave={handleSave} onDelete={onDelete} />
-        
-        <div className="mt-8">
-          <EmptyCharacter />
-        </div>
       </div>
     </div>
   );

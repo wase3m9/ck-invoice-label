@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import MergePDF from "./pages/MergePDF";
+import EmptyCharacter from "./pages/EmptyChar";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<Index />} />
           <Route path="/merge" element={<MergePDF />} />
+          <Route path="/empty-char" element={<EmptyCharacter />} />
           <Route path="/index" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

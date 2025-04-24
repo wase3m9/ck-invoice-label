@@ -1,91 +1,69 @@
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, FilePlus } from 'lucide-react';
+import { FileText, KeyRound } from 'lucide-react';
 
 const Login = () => {
-  const [password, setPassword] = useState('');
-  const [selectedTab, setSelectedTab] = useState('autolabel');
   const navigate = useNavigate();
+  const [accessCode, setAccessCode] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedTab === 'autolabel' && password === '1111') {
+    if (accessCode === '3333') {
+      navigate('/empty-char');
+    } else if (accessCode === '1234') {
       navigate('/dashboard');
-      return;
-    }
-    if (selectedTab === 'merge' && password === '2222') {
+    } else if (accessCode === '2222') {
       navigate('/merge');
-      return;
+    } else {
+      setError('Invalid access code');
+      toast.error('Invalid access code');
     }
-    toast.error('Incorrect password');
-    setPassword('');
   };
 
-  return <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="flex flex-col items-center">
-          <img src="/lovable-uploads/5574e1a3-6ab7-4e5b-aaf8-f74b255fe514.png" alt="CloudKeepers Logo" className="h-16 mb-8" />
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#F2FCE2] via-[#FFDEE2] to-[#D3E4FD]">
+      <div className="glass-card p-8 rounded-lg shadow-md w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-semibold text-gray-900 flex items-center justify-center gap-3">
+            <KeyRound className="h-6 w-6" />
+            Access Required
+          </h1>
+          <p className="text-gray-600 mt-2">Enter the access code to proceed.</p>
         </div>
-
-        <Tabs defaultValue="autolabel" className="w-full" onValueChange={value => {
-        setSelectedTab(value);
-        setPassword('');
-      }}>
-          <TabsList className="grid grid-cols-2 w-full mb-6 overflow rounded-xl border">
-            <TabsTrigger value="autolabel" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
-              <FileText className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium">PDF AutoLabel</span>
-            </TabsTrigger>
-            <TabsTrigger value="merge" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
-              <FilePlus className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium">Merge PDFs</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="autolabel" className="mt-2 space-y-4">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
-                <FileText className="h-6 w-6" />
-                PDF AutoLabel
-              </h1>
-              <p className="text-gray-600 text-center">
-                Labelling uploaded PDF invoices in a structured and consistent format
-              </p>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="mt-4 space-y-2 flex flex-col items-center">
-              <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[180px]" autoFocus />
-              <Button type="submit" className="w-[180px] py-1 h-8">
-                Continue
-              </Button>
-            </form>
-          </TabsContent>
-          
-          <TabsContent value="merge" className="mt-2 space-y-4">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
-                <FilePlus className="h-6 w-6" />
-                Merge PDF Files
-              </h1>
-              <p className="text-gray-600 text-center">
-                Combine PDFs in the order you want with the easiest PDF merger available
-              </p>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="mt-4 space-y-2 flex flex-col items-center">
-              <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[180px]" autoFocus />
-              <Button type="submit" className="w-[180px] py-1 h-8">
-                Continue
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="accessCode">Access Code</Label>
+            <Input
+              type="password"
+              id="accessCode"
+              placeholder="Enter access code"
+              value={accessCode}
+              onChange={(e) => setAccessCode(e.target.value)}
+            />
+          </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <Button type="submit" className="w-full">
+            Access Dashboard
+          </Button>
+        </form>
+        <div className="mt-6 text-center text-gray-500">
+          <p className="text-sm">
+            Available access codes:
+          </p>
+          <ul className="list-disc pl-5">
+            <li><code className="text-primary">1234</code> - PDF AutoLabel</li>
+            <li><code className="text-primary">2222</code> - Merge PDFs</li>
+            <li><code className="text-primary">3333</code> - Empty Character Tool</li>
+          </ul>
+        </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Login;
