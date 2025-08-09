@@ -44,22 +44,22 @@ const Login = () => {
           setSelectedTab(value);
           setPassword('');
         }}>
-          <TabsList className="grid grid-cols-4 w-full mb-6 overflow rounded-xl border">
-            <TabsTrigger value="autolabel" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
-              <FileText className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium">PDF AutoLabel</span>
+          <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full mb-6 h-auto rounded-xl border bg-muted">
+            <TabsTrigger value="autolabel" className="flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 py-3 px-2 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
+              <FileText className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium text-center">PDF AutoLabel</span>
             </TabsTrigger>
-            <TabsTrigger value="merge" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
-              <FilePlus className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium">Merge PDFs</span>
+            <TabsTrigger value="merge" className="flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 py-3 px-2 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
+              <FilePlus className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium text-center">Merge PDFs</span>
             </TabsTrigger>
-            <TabsTrigger value="empty-char" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
-              <Copy className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium">Empty Character</span>
+            <TabsTrigger value="empty-char" className="flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 py-3 px-2 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
+              <Copy className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium text-center">Empty Character</span>
             </TabsTrigger>
-            <TabsTrigger value="bank-statement" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
-              <BarChart3 className="h-5 w-5 flex-shrink-0" />
-              <span className="font-medium">Bank Statement</span>
+            <TabsTrigger value="bank-statement" className="flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 py-3 px-2 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
+              <BarChart3 className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium text-center">Bank Statement</span>
             </TabsTrigger>
           </TabsList>
           
