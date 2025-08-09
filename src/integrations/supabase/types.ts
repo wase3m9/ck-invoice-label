@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      bank_statements: {
+        Row: {
+          account_number: string | null
+          bank_name: string | null
+          closing_balance: number | null
+          created_at: string
+          downloaded_at: string | null
+          excel_file_path: string | null
+          file_path: string
+          id: string
+          opening_balance: number | null
+          original_filename: string
+          processed_filename: string
+          statement_period: string | null
+          total_credits: number | null
+          total_debits: number | null
+          total_transactions: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          account_number?: string | null
+          bank_name?: string | null
+          closing_balance?: number | null
+          created_at?: string
+          downloaded_at?: string | null
+          excel_file_path?: string | null
+          file_path: string
+          id?: string
+          opening_balance?: number | null
+          original_filename: string
+          processed_filename: string
+          statement_period?: string | null
+          total_credits?: number | null
+          total_debits?: number | null
+          total_transactions?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          account_number?: string | null
+          bank_name?: string | null
+          closing_balance?: number | null
+          created_at?: string
+          downloaded_at?: string | null
+          excel_file_path?: string | null
+          file_path?: string
+          id?: string
+          opening_balance?: number | null
+          original_filename?: string
+          processed_filename?: string
+          statement_period?: string | null
+          total_credits?: number | null
+          total_debits?: number | null
+          total_transactions?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           created_at: string | null
