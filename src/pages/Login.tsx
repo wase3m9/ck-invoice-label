@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, FilePlus, Copy } from 'lucide-react';
+import { FileText, FilePlus, Copy, BarChart3 } from 'lucide-react';
 
 const Login = () => {
   const [password, setPassword] = useState('');
@@ -25,6 +25,10 @@ const Login = () => {
       navigate('/empty-char');
       return;
     }
+    if (selectedTab === 'bank-statement' && password === '4444') {
+      navigate('/bank-statement');
+      return;
+    }
     toast.error('Incorrect password');
     setPassword('');
   };
@@ -40,7 +44,7 @@ const Login = () => {
           setSelectedTab(value);
           setPassword('');
         }}>
-          <TabsList className="grid grid-cols-3 w-full mb-6 overflow rounded-xl border">
+          <TabsList className="grid grid-cols-4 w-full mb-6 overflow rounded-xl border">
             <TabsTrigger value="autolabel" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
               <FileText className="h-5 w-5 flex-shrink-0" />
               <span className="font-medium">PDF AutoLabel</span>
@@ -52,6 +56,10 @@ const Login = () => {
             <TabsTrigger value="empty-char" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
               <Copy className="h-5 w-5 flex-shrink-0" />
               <span className="font-medium">Empty Character</span>
+            </TabsTrigger>
+            <TabsTrigger value="bank-statement" className="flex items-center justify-center gap-3 py-5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
+              <BarChart3 className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium">Bank Statement</span>
             </TabsTrigger>
           </TabsList>
           
@@ -101,6 +109,25 @@ const Login = () => {
               </h1>
               <p className="text-gray-600 text-center">
                 Generate an invisible character that can be used where regular spaces are not accepted
+              </p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="mt-4 space-y-2 flex flex-col items-center">
+              <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[180px]" autoFocus />
+              <Button type="submit" className="w-[180px] py-1 h-8">
+                Continue
+              </Button>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="bank-statement" className="mt-2 space-y-4">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+                <BarChart3 className="h-6 w-6" />
+                Bank Statement Converter
+              </h1>
+              <p className="text-gray-600 text-center">
+                Convert bank statement PDFs to structured Excel files
               </p>
             </div>
             
