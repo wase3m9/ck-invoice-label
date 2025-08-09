@@ -5,12 +5,10 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { FileText, FilePlus, Copy, BarChart3 } from 'lucide-react';
-
 const Login = () => {
   const [password, setPassword] = useState('');
   const [selectedTab, setSelectedTab] = useState('autolabel');
   const navigate = useNavigate();
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedTab === 'autolabel' && password === '1111') {
@@ -32,19 +30,17 @@ const Login = () => {
     toast.error('Incorrect password');
     setPassword('');
   };
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+  return <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center">
           <img src="/lovable-uploads/5574e1a3-6ab7-4e5b-aaf8-f74b255fe514.png" alt="CloudKeepers Logo" className="h-16 mb-8" />
         </div>
 
         <Tabs defaultValue="autolabel" className="w-full" onValueChange={value => {
-          setSelectedTab(value);
-          setPassword('');
-        }}>
-          <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full mb-6 h-auto rounded-xl border bg-muted">
+        setSelectedTab(value);
+        setPassword('');
+      }}>
+          <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full mb-6 h-auto rounded-xl border bg-muted mx-0 my-0 py-0 px-px">
             <TabsTrigger value="autolabel" className="flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 py-3 px-2 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
               <FileText className="h-4 w-4 flex-shrink-0" />
               <span className="font-medium text-center">PDF AutoLabel</span>
@@ -140,8 +136,6 @@ const Login = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Login;
