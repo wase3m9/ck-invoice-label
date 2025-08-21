@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import MergePDF from "./pages/MergePDF";
 import EmptyChar from "./pages/EmptyChar";
-import BankStatement from "./pages/BankStatement";
+
 
 const queryClient = new QueryClient();
 
@@ -24,7 +24,7 @@ const App = () => (
           <Route path="/dashboard" element={<Index />} />
           <Route path="/merge" element={<MergePDF />} />
           <Route path="/empty-char" element={<EmptyChar />} />
-          <Route path="/bank-statement" element={<BankStatement />} />
+          
           <Route path="/index" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

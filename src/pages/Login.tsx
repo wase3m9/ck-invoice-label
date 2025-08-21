@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { FileText, FilePlus, Copy, BarChart3 } from 'lucide-react';
+import { FileText, FilePlus, Copy } from 'lucide-react';
 const Login = () => {
   const [password, setPassword] = useState('');
   const [selectedTab, setSelectedTab] = useState('autolabel');
@@ -23,10 +23,6 @@ const Login = () => {
       navigate('/empty-char');
       return;
     }
-    if (selectedTab === 'bank-statement' && password === '4444') {
-      navigate('/bank-statement');
-      return;
-    }
     toast.error('Incorrect password');
     setPassword('');
   };
@@ -40,7 +36,7 @@ const Login = () => {
         setSelectedTab(value);
         setPassword('');
       }}>
-          <TabsList className="grid grid-cols-2 lg:grid-cols-4 w-full mb-6 h-auto rounded-xl border bg-muted mx-0 my-0 py-0 px-px">
+          <TabsList className="grid grid-cols-3 w-full mb-6 h-auto rounded-xl border bg-muted mx-0 my-0 py-0 px-px">
             <TabsTrigger value="autolabel" className="flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 py-3 px-2 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
               <FileText className="h-4 w-4 flex-shrink-0" />
               <span className="font-medium text-center">PDF AutoLabel</span>
@@ -52,10 +48,6 @@ const Login = () => {
             <TabsTrigger value="empty-char" className="flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 py-3 px-2 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
               <Copy className="h-4 w-4 flex-shrink-0" />
               <span className="font-medium text-center">Empty Character</span>
-            </TabsTrigger>
-            <TabsTrigger value="bank-statement" className="flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 py-3 px-2 text-xs lg:text-sm data-[state=active]:bg-primary data-[state=active]:text-white transition-all duration-200">
-              <BarChart3 className="h-4 w-4 flex-shrink-0" />
-              <span className="font-medium text-center">Bank Statement</span>
             </TabsTrigger>
           </TabsList>
           
@@ -116,24 +108,6 @@ const Login = () => {
             </form>
           </TabsContent>
 
-          <TabsContent value="bank-statement" className="mt-2 space-y-4">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
-                <BarChart3 className="h-6 w-6" />
-                Bank Statement Converter
-              </h1>
-              <p className="text-gray-600 text-center">
-                Convert bank statement PDFs to structured Excel files
-              </p>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="mt-4 space-y-2 flex flex-col items-center">
-              <Input type="password" placeholder="Enter access code" value={password} onChange={e => setPassword(e.target.value)} className="text-center w-[180px]" autoFocus />
-              <Button type="submit" className="w-[180px] py-1 h-8">
-                Continue
-              </Button>
-            </form>
-          </TabsContent>
         </Tabs>
       </div>
     </div>;
