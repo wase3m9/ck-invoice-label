@@ -5,9 +5,10 @@ import { FileSection } from '../components/FileSection';
 import { LabelFormatConfig, LabelField } from '../components/LabelFormatConfig';
 import { useFileProcessor } from '../hooks/useFileProcessor';
 import { toast } from 'sonner';
-import { Home, FileText } from 'lucide-react';
+import { Home, FileText, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import EmptyCharacter from '../components/EmptyCharacter';
+import { useAuth } from '@/contexts/AuthContext';
 
 const DEFAULT_FIELDS: LabelField[] = [{
   id: 'location',
@@ -31,6 +32,7 @@ const Index = () => {
   const [fields, setFields] = useState<LabelField[]>(DEFAULT_FIELDS);
   const [labelFormat, setLabelFormat] = useState<string[]>(DEFAULT_FORMAT);
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const handleFormatChange = (fieldId: string, position: number) => {
     const newFormat = [...labelFormat];
@@ -59,7 +61,7 @@ const Index = () => {
     handleFilesDrop,
     handleSave,
     handleDelete
-  } = useFileProcessor(labelFormat, generateFileName);
+  } = useFileProcessor(labelFormat, generateFileName, user?.id || '');
 
   const onDelete = async (file: any) => {
     try {
@@ -73,15 +75,24 @@ const Index = () => {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto relative">
-        <div className="absolute left-0 top-0">
+        <div className="absolute left-0 top-0 flex gap-2">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/auth')}
             className="h-10 w-10 rounded-full"
             aria-label="Go to home page"
           >
             <Home className="h-18 w-18" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={signOut}
+            className="h-10 w-10 rounded-full"
+            aria-label="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
           </Button>
         </div>
         

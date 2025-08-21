@@ -104,7 +104,8 @@ export const deleteFile = async (file: ProcessedFile): Promise<void> => {
 
 export const processFile = async (
   file: File, 
-  generateFileName: (details: any) => string
+  generateFileName: (details: any) => string,
+  userId: string
 ): Promise<{ name: string; details: any; downloadUrl: string; filePath: string }> => {
   const fileExt = file.name.split('.').pop();
   const filePath = `${crypto.randomUUID()}.${fileExt}`;
@@ -119,25 +120,16 @@ export const processFile = async (
     throw new Error('Failed to upload file');
   }
 
-  // Process with edge function
-  const formData = new FormData();
-  formData.append('file', file);
-
-  const response = await fetch('https://yjhamwwwryfswimjjzgt.supabase.co/functions/v1/process-invoice', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqaGFtd3d3cnlmc3dpbWpqemd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA1MDMxNTYsImV4cCI6MjA1NjA3OTE1Nn0.bjbj1u32328r2NepQxBlhQeo_D3VXJpRR5VDzCR09DQ`,
-    },
-    body: formData,
+  // Process with edge function using Supabase client
+  const { data, error } = await supabase.functions.invoke('process-invoice', {
+    body: { filePath: filePath },
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error('Edge function error:', errorData);
-    throw new Error(errorData.error || 'Failed to process invoice');
+  if (error) {
+    console.error('Edge function error:', error);
+    throw new Error('Failed to process invoice');
   }
 
-  const data = await response.json();
   const extractedDetails = data.details;
   
   // Store the raw amount for database
@@ -154,17 +146,18 @@ export const processFile = async (
 
   const newFilename = generateFileName(extractedDetails);
 
-  // Save to database using the raw amount
+  // Save to database with authenticated user ID
   const { error: dbError } = await supabase
     .from('invoices')
     .insert({
+      user_id: userId,
       original_filename: file.name,
       processed_filename: newFilename,
       file_path: filePath,
       location: extractedDetails.location,
       supplier_name: extractedDetails.supplier_name,
       invoice_number: extractedDetails.invoice_number,
-      gross_invoice_amount: rawAmount // Use the raw amount for database storage
+      gross_invoice_amount: rawAmount
     });
 
   if (dbError) {

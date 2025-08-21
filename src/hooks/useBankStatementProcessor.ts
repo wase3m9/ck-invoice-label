@@ -4,7 +4,11 @@ import { ProcessedFile } from '../types/file';
 import { downloadBankStatement, deleteBankStatement, processBankStatement } from '../utils/bankStatementUtils';
 import { ProcessingState } from '../components/ProcessingStatus';
 
-export const useBankStatementProcessor = (labelFormat: string[], generateFileName: (details: any) => string) => {
+export const useBankStatementProcessor = (
+  labelFormat: string[], 
+  generateFileName: (details: any) => string,
+  userId: string
+) => {
   const [files, setFiles] = useState<ProcessedFile[]>([]);
 
   const handleFilesDrop = async (droppedFiles: File[]) => {
@@ -19,7 +23,7 @@ export const useBankStatementProcessor = (labelFormat: string[], generateFileNam
     for (let i = 0; i < droppedFiles.length; i++) {
       const file = droppedFiles[i];
       try {
-        const processedDetails = await processBankStatement(file, generateFileName);
+        const processedDetails = await processBankStatement(file, generateFileName, userId);
         
         setFiles(prev => {
           const updated = [...prev];

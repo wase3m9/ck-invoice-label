@@ -89,7 +89,8 @@ export const deleteBankStatement = async (file: ProcessedFile): Promise<void> =>
 
 export const processBankStatement = async (
   file: File, 
-  generateFileName: (details: any) => string
+  generateFileName: (details: any) => string,
+  userId: string
 ): Promise<{ name: string; details: any; downloadUrl: string; filePath: string }> => {
   console.log('Processing bank statement:', file.name);
 
@@ -118,11 +119,11 @@ export const processBankStatement = async (
 
     const { details, excelFilePath } = functionData;
 
-    // Save details to database
+    // Save details to database with authenticated user ID
     const { error: insertError } = await supabase
       .from('bank_statements')
       .insert({
-        user_id: null, // No auth in this app
+        user_id: userId,
         original_filename: file.name,
         processed_filename: generateFileName(details),
         file_path: uploadData.path,

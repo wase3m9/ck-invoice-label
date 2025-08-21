@@ -5,7 +5,11 @@ import { ProcessedFile } from '../types/file';
 import { downloadFile, deleteFile, processFile } from '../utils/fileUtils';
 import { ProcessingState } from '../components/ProcessingStatus';
 
-export const useFileProcessor = (labelFormat: string[], generateFileName: (details: any) => string) => {
+export const useFileProcessor = (
+  labelFormat: string[], 
+  generateFileName: (details: any) => string,
+  userId: string
+) => {
   const [files, setFiles] = useState<ProcessedFile[]>([]);
 
   const handleFilesDrop = async (droppedFiles: File[]) => {
@@ -20,7 +24,7 @@ export const useFileProcessor = (labelFormat: string[], generateFileName: (detai
     for (let i = 0; i < droppedFiles.length; i++) {
       const file = droppedFiles[i];
       try {
-        const processedDetails = await processFile(file, generateFileName);
+        const processedDetails = await processFile(file, generateFileName, userId);
         
         setFiles(prev => {
           const updated = [...prev];

@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Home, Copy } from 'lucide-react';
+import { Home, Copy, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EmptyChar = () => {
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   
   const emptyChar = '\u200B'; // Zero-width space character
 
@@ -25,15 +27,24 @@ const EmptyChar = () => {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto relative">
-        <div className="absolute left-0 top-0">
+        <div className="absolute left-0 top-0 flex gap-2">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/auth')}
             className="h-10 w-10 rounded-full"
             aria-label="Go to home page"
           >
             <Home className="h-18 w-18" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={signOut}
+            className="h-10 w-10 rounded-full"
+            aria-label="Sign out"
+          >
+            <LogOut className="h-4 w-4" />
           </Button>
         </div>
         
