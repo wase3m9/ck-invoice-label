@@ -3,13 +3,11 @@ import { FileUpload } from '@/components/FileUpload';
 import { FileList } from '@/components/FileList';
 import { LabelFormatConfig } from '@/components/LabelFormatConfig';
 import { useBankStatementProcessor } from '@/hooks/useBankStatementProcessor';
-import { useAuth } from '@/contexts/AuthContext';
 
 export default function BankStatement() {
-  const { user } = useAuth();
   const [labelFormat, setLabelFormat] = useState<string[]>([
     'Bank Name',
-    'Account Number', 
+    'Account Number',
     'Statement Period'
   ]);
 
@@ -32,8 +30,7 @@ export default function BankStatement() {
 
   const { files, handleFilesDrop, handleSave, handleDelete } = useBankStatementProcessor(
     labelFormat,
-    generateFileName,
-    user?.id || ''
+    generateFileName
   );
 
   return (

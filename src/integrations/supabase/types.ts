@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
+  // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -32,7 +32,7 @@ export type Database = {
           total_debits: number | null
           total_transactions: number | null
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           account_number?: string | null
@@ -51,7 +51,7 @@ export type Database = {
           total_debits?: number | null
           total_transactions?: number | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           account_number?: string | null
@@ -70,7 +70,7 @@ export type Database = {
           total_debits?: number | null
           total_transactions?: number | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -87,7 +87,7 @@ export type Database = {
           processed_filename: string
           supplier_name: string
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -101,7 +101,7 @@ export type Database = {
           processed_filename: string
           supplier_name: string
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -115,7 +115,7 @@ export type Database = {
           processed_filename?: string
           supplier_name?: string
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

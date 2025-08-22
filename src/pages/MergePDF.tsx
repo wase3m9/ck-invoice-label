@@ -14,13 +14,11 @@ import {
   Download,
   ArrowLeftRight,
   Home,
-  FileUp,
-  LogOut
+  FileUp
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { PDFDocument } from 'pdf-lib';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 
 type MergeFile = {
   id: string;
@@ -31,7 +29,6 @@ const MergePDF = () => {
   const [files, setFiles] = useState<MergeFile[]>([]);
   const [merging, setMerging] = useState(false);
   const navigate = useNavigate();
-  const { signOut } = useAuth();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const pdfFiles = acceptedFiles.filter(file => 
@@ -154,24 +151,15 @@ const MergePDF = () => {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto relative">
-        <div className="absolute left-0 top-0 flex gap-2">
+        <div className="absolute left-0 top-0">
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/')}
             className="h-10 w-10 rounded-full"
             aria-label="Go to home page"
           >
             <Home className="h-18 w-18" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={signOut}
-            className="h-10 w-10 rounded-full"
-            aria-label="Sign out"
-          >
-            <LogOut className="h-4 w-4" />
           </Button>
         </div>
         

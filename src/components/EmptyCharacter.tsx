@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
+
 const EmptyCharacter = () => {
   const emptyChar = '\u200B'; // Zero-width space character
 
@@ -13,23 +15,23 @@ const EmptyCharacter = () => {
       toast.error('Failed to copy to clipboard');
     }
   };
+
   return (
-    <div className="glass-card p-8">
-      <div className="text-center space-y-6">
-        <h3 className="text-lg font-semibold text-gray-900">Empty Character Tool</h3>
-        <p className="text-gray-600">
-          Click to copy an invisible empty character to your clipboard
-        </p>
-        <Button 
-          onClick={handleCopy}
-          className="flex items-center justify-center gap-2"
-          variant="outline"
-        >
-          <Copy className="h-4 w-4" />
-          Copy Empty Character
-        </Button>
-      </div>
+    <div className="rounded-lg border bg-card p-6 shadow-sm">
+      <h2 className="text-2xl font-semibold mb-4">Empty Character Tool</h2>
+      <p className="text-muted-foreground mb-6">
+        Click the button below to copy an invisible empty character to your clipboard.
+        This character can be used where regular spaces are not accepted.
+      </p>
+      <Button 
+        onClick={handleCopy}
+        className="flex items-center gap-2"
+      >
+        <Copy className="h-4 w-4" />
+        Copy to clipboard
+      </Button>
     </div>
   );
 };
+
 export default EmptyCharacter;
